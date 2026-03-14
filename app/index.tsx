@@ -6,7 +6,7 @@ import {
 } from "lucide-react-native"
 import { useEffect, useState, useTransition } from "react"
 import { ActivityIndicator, StyleSheet, TextInput, View } from "react-native"
-import { Message, useLLM } from "react-native-executorch"
+import { useLLM } from "react-native-executorch"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import BoardList from "./components/Board/BoardList"
 import { Button, Text } from "./components/Styled"
@@ -30,6 +30,7 @@ export default function Index() {
   const { addBoard } = usePagesetActions()
   const [loading, startLoading] = useTransition()
   const [llmMessage, setLlmMessage] = useState("")
+  const [llmResponses, setLlmResponses] = useState<string[]>([])
 
   const llm = useLLM({
     model: {
@@ -68,16 +69,28 @@ export default function Index() {
   }
 
   const testLLM = async (message: string) => {
-    console.log(`${message}...`)
+    setLlmResponses([])
     if (!llm.isReady) return console.log(`Downloading: ${llm.downloadProgress}`)
-    const chat: Message[] = [{ role: "system", content: message }]
-    let response = await llm.generate(chat)
-    response = response
-      .replace(/<e.*$/, "")
-      .replace(/\n*<\/*bos>.*$/, "")
-      .trim()
-    setLlmMessage(`${message} ${response}`)
-    console.log(response)
+    const responses = new Set()
+    for (let i = 0; i < 5; i++) {
+      try {
+        let response = await llm.generate([{ role: "user", content: message }])
+        response = response
+          .replace(/<e.*$/, "")
+          .replace(/\n*<\/*bos>.*$/, "")
+          .replaceAll(/[^\w ']/g, "")
+          .trim()
+          .toLowerCase()
+        if (!responses.has(response)) {
+          responses.add(response)
+          setLlmResponses((prev) => [...prev, response])
+          console.log(response)
+        }
+      } catch (e) {
+        handleError(e)
+      }
+    }
+    console.log(responses)
   }
 
   return (
@@ -140,12 +153,29 @@ export default function Index() {
               color: theme.onSurface,
             }}
           />
-          <Button variant="primary" onPress={() => testLLM(llmMessage)}>
-            <Text style={{ color: theme.onPrimary }}>Predict</Text>
+          <Button
+            variant="primary"
+            onPress={() => testLLM(llmMessage)}
+            disabled={!llm.isReady}
+          >
+            <Text style={{ color: theme.onPrimary }}>
+              {llm.isReady ? "Predict" : "Loading..."}
+            </Text>
           </Button>
-          <Button variant="ghost" onPress={() => setLlmMessage("")}>
+          <Button
+            variant="ghost"
+            onPress={() => {
+              setLlmMessage("")
+              setLlmResponses([])
+            }}
+          >
             <Text style={{ color: theme.onSurface }}>Clear</Text>
           </Button>
+          {llmResponses.map((response, i) => (
+            <Text key={i} style={{ color: theme.onSurface }}>
+              {response}
+            </Text>
+          ))}
         </View>
       </View>
     </>
