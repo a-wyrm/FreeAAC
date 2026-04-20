@@ -170,8 +170,8 @@ export const templates: BoardTemplate[] = [
 ]
 
 export const licenseImageMap: {
-  light: Record<string, unknown>
-  dark: Record<string, unknown>
+  light: Record<string, number>
+  dark: Record<string, number>
 } = {
   light: {
     "CC-BY": require("../../assets/images/cc/light/by.png"),

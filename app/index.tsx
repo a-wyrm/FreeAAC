@@ -11,7 +11,7 @@ import BoardList from "./components/Board/BoardList"
 import { Button, Text } from "./components/Styled"
 import { usePagesetActions } from "./stores/boards"
 import { handleError } from "./utils/error"
-import { importBoardFile, loadBoard } from "./utils/file"
+import { importBoardFile } from "./utils/file"
 import {
   FONT_SIZE,
   FONT_WEIGHT,
@@ -31,16 +31,10 @@ export default function Index() {
 
   const openFile = async () => {
     try {
-      const file = await importBoardFile()
-      if (!file) return
       startLoading(async () => {
-        const tree = await loadBoard(file.uri)
-        addBoard({
-          id: file.id,
-          uri: file.uri,
-          name: tree.metadata.name || "Untitled board",
-        })
-        router.push({ pathname: "/[board]", params: { board: file.id } })
+        const { id, name } = await importBoardFile()
+        addBoard({ id, name })
+        router.push({ pathname: "/[board]", params: { board: id } })
       })
     } catch (e) {
       handleError(e)

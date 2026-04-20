@@ -15,9 +15,8 @@ export default function Create() {
   const createBoard = async (name: string, rows: number, cols: number) => {
     const id = uuid()
     const tree = generateNewBoard(rows, cols)
-    const uri = `${id}.obz`
-    await saveBoard(uri, tree)
-    addBoard({ id, uri, name })
+    await saveBoard(id, tree)
+    addBoard({ id, name })
     toggleEditMode()
     replace(`/${id}`)
   }

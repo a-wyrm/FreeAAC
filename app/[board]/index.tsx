@@ -9,9 +9,8 @@ import Page from "../components/Page/Page"
 import PageAddSheet from "../components/Page/PageAddSheet"
 import PageNav from "../components/Page/PageNav"
 import {
-  useBoards,
   useCurrentPageId,
-  usePagesetActions,
+  usePagesetActions
 } from "../stores/boards"
 import { useDebounceTime, useMessageWindowLocation } from "../stores/prefs"
 import { generateNewPage, getHomePageId } from "../utils/boards"
@@ -47,8 +46,7 @@ export default function Board() {
   const debounceTime = useDebounceTime()
   const lastTimeRef = useRef(0)
   const { board } = useLocalSearchParams()
-  const boards = useBoards()
-  const uri = boards.find((b) => b.id === board)?.uri
+  const id = board as string
   const messageWindowLocation = useMessageWindowLocation()
   const currentPageId = useCurrentPageId()
   const { navigateToPage, navigateBack, setCurrentBoardId } =
@@ -64,9 +62,8 @@ export default function Board() {
 
   useEffect(() => {
     ;(async () => {
-      if (!uri) return
       try {
-        const tree = await loadBoard(uri)
+        const tree = await loadBoard(id)
         console.log(tree)
         if (Object.keys(tree.pages).length < 1)
           return handleError("No pages found")
@@ -81,7 +78,7 @@ export default function Board() {
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uri])
+  }, [id])
 
   const page = useMemo(() => {
     if (!tree || !currentPageId) return
@@ -91,7 +88,6 @@ export default function Board() {
   }, [currentPageId, tree])
 
   const savePage = (page: BoardPage) => {
-    if (!uri) return handleError("Could not save page - file not defined")
     if (!tree) return handleError("Could not save page - tree does not exist")
     if (!currentPageId) return handleError("Could not save page - ID undefined")
     console.log("Saving page", page)
@@ -109,7 +105,7 @@ export default function Board() {
       metadata,
       pages,
     }
-    saveBoard(uri, newTree)
+    saveBoard(id, newTree)
     setTree(newTree)
   }
 
@@ -150,7 +146,6 @@ export default function Board() {
   }, [tree])
 
   const deletePage = () => {
-    if (!uri) return handleError("Could not delete page - file not defined")
     if (!tree) return handleError("Could not delete page - tree does not exist")
     if (!currentPageId)
       return handleError("Could not delete page - ID undefined")
@@ -166,14 +161,12 @@ export default function Board() {
       ...tree,
       pages,
     }
-    saveBoard(uri, newTree)
+    saveBoard(id, newTree)
     setTree(newTree)
     navigateHome()
   }
 
   const setDefaultPageId = (defaultHomePageId: string) => {
-    if (!uri)
-      return handleError("Could not set default page - file not defined")
     if (!tree)
       return handleError("Could not set default page - tree does not exist")
     if (!(defaultHomePageId in tree.pages))
@@ -186,7 +179,7 @@ export default function Board() {
         name: tree.pages[defaultHomePageId].name,
       },
     }
-    saveBoard(uri, newTree)
+    saveBoard(id, newTree)
     setTree(newTree)
   }
 
@@ -221,7 +214,6 @@ export default function Board() {
   }, [tree])
 
   const addPage = async (name: string, rows: number, cols: number) => {
-    if (!uri) return handleError("Could not add page - file not defined")
     if (!tree) return handleError("Could not add page - tree does not exist")
     if (!currentPageId)
       return handleError("Could not add page - current page not found")
@@ -232,7 +224,7 @@ export default function Board() {
       ...tree,
       pages,
     }
-    saveBoard(uri, newTree)
+    saveBoard(id, newTree)
     setTree(newTree)
     navigateToPage(page.id)
     pageAddSheet.current?.dismiss()

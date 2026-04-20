@@ -1,5 +1,6 @@
 import { DocumentPickerAsset } from "expo-document-picker"
-import { getFileExt } from "./file"
+import { Paths } from "expo-file-system"
+import { getFileExt, loadBoard, saveBoard } from "./file"
 import { uuid } from "./uuid"
 
 export const pathExists = async (path: string): Promise<boolean> => {
@@ -46,7 +47,13 @@ export const mkDir = async (
 }
 
 export const listDir = async (path: string): Promise<string[]> => {
-  throw new Error("listDir not available on web")
+  const root = await navigator.storage.getDirectory()
+  const dir = await root.getDirectoryHandle(path)
+  const dirContents = []
+  for await (const handle of dir.values()) {
+    dirContents.push(handle.name)
+  }
+  return dirContents
 }
 
 export const removePath = async (
@@ -73,8 +80,14 @@ export const saveFile = async (
   data: Uint8Array,
 ): Promise<string> => {
   try {
+    const dirname = Paths.dirname(fileName)
+    const baseName = Paths.basename(fileName)
     const root = await navigator.storage.getDirectory()
-    const fileHandle = await root.getFileHandle(fileName, { create: true })
+    const dir =
+      dirname === "." ? root : (
+        await root.getDirectoryHandle(dirname, { create: true })
+      )
+    const fileHandle = await dir.getFileHandle(baseName, { create: true })
     const writable = await fileHandle.createWritable()
     await writable.write(data as BufferSource)
     await writable.close()
@@ -83,27 +96,35 @@ export const saveFile = async (
       throw new Error("This app does not work in private browsing mode", {
         cause: e,
       })
+    throw e
   }
   return fileName
 }
 
 export const loadFile = async (fileName: string): Promise<Uint8Array> => {
+  const dirname = Paths.dirname(fileName)
+  const baseName = Paths.basename(fileName)
   const root = await navigator.storage.getDirectory()
-  const fileHandle = await root.getFileHandle(fileName)
+  const dir = dirname === "." ? root : await root.getDirectoryHandle(dirname)
+  const fileHandle = await dir.getFileHandle(baseName)
   const file = await fileHandle.getFile()
   return await file.bytes()
 }
 
-export const downloadFile = async (
+export const importBoard = async (
   url: string,
-): Promise<{ id: string; fileName: string }> => {
+): Promise<{ id: string; name: string }> => {
   const ext = getFileExt(url.split("/").slice(-1)[0])
   const id = uuid()
   const fileName = `${id}.${ext}`
   const response = await fetch(url)
   const data = await response.bytes()
   await saveFile(fileName, data)
-  return { id, fileName }
+  const tree = await loadBoard(fileName)
+  const name = tree.metadata.name ?? "Untitled board"
+  await saveBoard(id, tree)
+  await removePath(fileName)
+  return { id, name }
 }
 
 export const shareFile = async (file: File | Blob, name: string) => {

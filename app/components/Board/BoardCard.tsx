@@ -11,7 +11,7 @@ import {
   licenseImageMap,
   licenseLinkMap,
 } from "../../utils/consts"
-import { downloadFile } from "../../utils/io"
+import { importBoard } from "../../utils/io"
 import { FONT_SIZE, GAP, MAX_WIDTH, RADIUS, useTheme } from "../../utils/theme"
 import { Button, Text } from "../Styled"
 
@@ -26,8 +26,8 @@ export default function BoardCard({ board }: { board: BoardTemplate }) {
   const load = () => {
     startLoading(async () => {
       try {
-        const { fileName, id } = await downloadFile(board.url)
-        addBoard({ id, uri: fileName, name: board.name })
+        const { id } = await importBoard(board.url)
+        addBoard({ id, name: board.name })
         replace({ pathname: "/[board]", params: { board: id } })
       } catch (e) {
         console.error(e)

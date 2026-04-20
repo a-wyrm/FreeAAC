@@ -5,7 +5,7 @@ import { useState, useTransition } from "react"
 import { ActivityIndicator } from "react-native"
 import { useBoards, usePagesetActions } from "../../stores/boards"
 import { handleError } from "../../utils/error"
-import { deleteBoard, exportBoard, getFileExt } from "../../utils/file"
+import { deleteBoard, exportBoard } from "../../utils/file"
 import { ICON_SIZE, PADDING, useTheme } from "../../utils/theme"
 import DialogConfirm from "../DialogConfirm"
 import DialogRename from "../DialogRename"
@@ -28,12 +28,11 @@ export default function BoardOptions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isExporting, startExporting] = useTransition()
   const board = boards.find((b) => b.id === boardId)
-  const ext = board ? getFileExt(board.uri) : undefined
 
   const handleExport = async () => {
     if (!board) return handleError("No board found")
     startExporting(async () => {
-      await exportBoard(board.uri, board.name)
+      await exportBoard(board.id, board.name)
       ref.current?.dismiss()
     })
   }
@@ -48,7 +47,7 @@ export default function BoardOptions({
 
   const handleDelete = async () => {
     if (!board) return handleError("No board found")
-    await deleteBoard(board.uri)
+    await deleteBoard(board.id)
     removeBoard(board.id)
     setShowDeleteDialog(false)
     ref.current?.dismiss()
@@ -79,7 +78,7 @@ export default function BoardOptions({
           }}
         />
         <SheetItem
-          label={`Export as file ${ext ? `(.${ext})` : ""}`}
+          label={`Export`}
           icon={
             isExporting ?
               <ActivityIndicator size="small" color={theme.onSurface} />

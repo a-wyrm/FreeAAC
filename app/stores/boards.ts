@@ -16,7 +16,6 @@ const generateEntry = (content: string): HistoryEntry => {
 
 interface Board {
   id: string
-  uri: string
   name: string
 }
 
@@ -99,7 +98,6 @@ const useStore = create<PagesetsState>()(
             currentPageId,
             previousPageIds,
           })
-          console.log({ previousPageIds })
         },
         addBoard: (board: Board) =>
           set({

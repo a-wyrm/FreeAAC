@@ -1,5 +1,8 @@
 import { HistoryEntry } from "@willwade/aac-processors/analytics"
-import { AACTree, getProcessor } from "@willwade/aac-processors/browser"
+import {
+  AACTree,
+  ObfProcessor
+} from "@willwade/aac-processors/browser"
 import { OblUtil } from "@willwade/aac-processors/metrics"
 import * as DocumentPicker from "expo-document-picker"
 import { Paths } from "expo-file-system"
@@ -104,21 +107,25 @@ export const getFileType = (ext: string): { mimeType: string; UTI: string } => {
   }
 }
 
-export const importBoardFile = async (): Promise<
-  { id: string; uri: string } | undefined
-> => {
+export const importBoardFile = async (): Promise<{
+  id: string
+  name: string
+}> => {
   const result = await DocumentPicker.getDocumentAsync({
     copyToCacheDirectory: true,
   })
   const asset = result.assets?.at(0)
-  if (!asset) return undefined
+  if (!asset) throw "No file selected"
   const file = getFileFromDocument(asset)
   const data = await file.bytes()
   const ext = getFileExt(asset.name)
   const id = uuid()
   const fileName = `${id}.${ext}`
-  const uri = await saveFile(fileName, data)
-  return { id, uri }
+  await saveFile(fileName, data)
+  const tree = await loadBoard(fileName)
+  const name = tree.metadata.name ?? "Untitled board"
+  await saveBoard(id, tree)
+  return { id, name }
 }
 
 export const importPrefsFile = async (): Promise<unknown> => {
@@ -158,24 +165,20 @@ export const selectImage = async (
   }
 }
 
-export const loadBoard = async (uri: string): Promise<BoardTree> => {
-  const boardFile = await loadFile(uri)
-  if (!boardFile) throw new Error("Could not load file")
-  const ext = getFileExt(uri)
-  const processor = getProcessor(`.${ext}`, { fileAdapter })
-  const tree = await processor.loadIntoTree(boardFile)
+export const loadBoard = async (id: string): Promise<BoardTree> => {
+  const processor = new ObfProcessor({ fileAdapter })
+  const tree = await processor.loadIntoTree(id)
   return tree
 }
 
-export const saveBoard = async (uri: string, tree: BoardTree) => {
-  console.log(`Saving to ${uri}`)
-  const ext = getFileExt(uri)
-  const processor = getProcessor(`.${ext}`, { fileAdapter })
-  await processor.saveFromTree(tree as unknown as AACTree, uri)
+export const saveBoard = async (id: string, tree: BoardTree) => {
+  console.log(`Saving board ${id}`)
+  const processor = new ObfProcessor({ fileAdapter })
+  await processor.saveFromTree(tree as unknown as AACTree, id)
 }
 
-export const deleteBoard = async (uri: string) => {
-  await removePath(uri)
+export const deleteBoard = async (id: string) => {
+  await removePath(id)
 }
 
 export const exportBoard = async (uri: string, name: string) => {
