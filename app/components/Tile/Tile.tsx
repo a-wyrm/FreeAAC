@@ -3,8 +3,7 @@ import { useDebounce } from "@/app/utils/debounce"
 import { PADDING, RADIUS, useTheme } from "@/app/utils/theme"
 import { BoardButton } from "@/app/utils/types"
 import { AACButton, AACStyle } from "@willwade/aac-processors/browser"
-import { StyleSheet, View } from "react-native"
-import Sortable from "react-native-sortables"
+import { StyleSheet, TouchableOpacity, View } from "react-native"
 import { Text } from "../Styled"
 import TileImage from "./TileImage"
 
@@ -56,8 +55,8 @@ export default function Tile({
 
   return (
     <View style={{ height }}>
-      <Sortable.Touchable
-        onTap={handlePress}
+      <TouchableOpacity
+        onPress={handlePress}
         style={{
           ...styles.container,
           ...button.style,
@@ -76,7 +75,7 @@ export default function Tile({
         {showText && labelLocation === "bottom" && (
           <Label text={button.label} style={button.style} />
         )}
-      </Sortable.Touchable>
+      </TouchableOpacity>
     </View>
   )
 }

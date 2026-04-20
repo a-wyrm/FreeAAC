@@ -1,11 +1,8 @@
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
+import { DndProvider, Draggable, DraggableGrid } from "@mgcrea/react-native-dnd"
 import { AACSemanticIntent } from "@willwade/aac-processors/browser"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { LayoutChangeEvent, StyleSheet, View } from "react-native"
-import Sortable, {
-  SortableGridDragEndCallback,
-  type SortableGridRenderItem,
-} from "react-native-sortables"
 import { EditTile } from "../../[board]"
 import { useSpeak } from "../../stores/audio"
 import { useEditMode, usePagesetActions } from "../../stores/boards"
@@ -17,10 +14,9 @@ import {
 import { generateNewButton } from "../../utils/boards"
 import { GAP, useTheme } from "../../utils/theme"
 import { BoardButton, BoardPage } from "../../utils/types"
-import { uuid } from "../../utils/uuid"
-import Tile from "../Tile/Tile"
 import TileAdd from "../Tile/TileAdd"
 import TileEditor from "../Tile/TileEditor"
+
 const getGridPosition = (index: number, rows: number, cols: number) => {
   const row = Math.floor(index / cols)
   const col = index - row * cols
@@ -133,17 +129,18 @@ export default function Page({
     ],
   )
 
-  const renderButton = useCallback<SortableGridRenderItem<BoardButton | null>>(
-    ({ item, index }) => {
+  const renderButton = useCallback(
+    ({ item, index }: { item: BoardButton | null; index: number }) => {
       const isHidden = item && item.visibility && item.visibility === "Hidden"
       if (item && (editMode || !isHidden))
         return (
-          <Tile
-            button={item}
-            onPress={onButtonPress}
-            height={rowHeight}
-            index={index}
-          />
+          <View></View>
+          // <Tile
+          //   button={item}
+          //   onPress={onButtonPress}
+          //   height={rowHeight}
+          //   index={index}
+          // />
         )
       if (editMode)
         return <TileAdd height={rowHeight} onPress={() => addButton(index)} />
@@ -152,14 +149,14 @@ export default function Page({
     [editMode, onButtonPress, rowHeight, addButton],
   )
 
-  const handleDragEnd: SortableGridDragEndCallback<BoardButton | null> = (
-    result,
-  ) => {
-    const flatGrid = result.data
-    const grid = []
-    while (flatGrid.length) grid.push(flatGrid.splice(0, cols))
-    savePage({ ...page, grid })
-  }
+  // const handleDragEnd: SortableGridDragEndCallback<BoardButton | null> = (
+  //   result,
+  // ) => {
+  //   const flatGrid = result.data
+  //   const grid = []
+  //   while (flatGrid.length) grid.push(flatGrid.splice(0, cols))
+  //   savePage({ ...page, grid })
+  // }
 
   useEffect(() => {
     editTileRef.current = editTile
@@ -195,6 +192,7 @@ export default function Page({
   }
 
   if (!rows || !cols) return <></>
+  console.log({ rows, cols })
   return (
     <>
       <View
@@ -209,7 +207,31 @@ export default function Page({
         ]}
         onLayout={handleLayout}
       >
-        <Sortable.Grid
+        <DndProvider>
+          <DraggableGrid
+            direction="row"
+            size={cols}
+            gap={tileSpacing}
+            // style={styles.grid}
+            // onOrderChange={onGridOrderChange}
+          >
+            {grid.map((item, index) => (
+              <Draggable
+                key={index}
+                id={index.toString()}
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderWidth: 1,
+                  borderColor: "red",
+                }}
+              >
+                {renderButton({ item, index })}
+              </Draggable>
+            ))}
+          </DraggableGrid>
+        </DndProvider>
+        {/* <Sortable.Grid
           key={page.id}
           columns={cols}
           data={grid}
@@ -222,7 +244,7 @@ export default function Page({
           itemsLayoutTransitionMode="reorder"
           itemEntering={null}
           itemExiting={null}
-        />
+        /> */}
       </View>
       <TileEditor
         ref={editSheet}
