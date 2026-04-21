@@ -188,7 +188,7 @@ export const saveBoard = async (id: string, tree: BoardTree) => {
 }
 
 export const deleteBoard = async (id: string) => {
-  await removePath(id)
+  await removePath(id, { recursive: true })
 }
 
 export const exportBoard = async (uri: string, name: string) => {
