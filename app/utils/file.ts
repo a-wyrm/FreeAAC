@@ -29,7 +29,7 @@ import {
   saveFileAs,
   saveObjectAs,
 } from "./io"
-import { BoardTree, TileImage } from "./types"
+import { BoardPage, BoardTree, TileImage } from "./types"
 import { uuid } from "./uuid"
 
 const fileAdapter = {
@@ -175,6 +175,22 @@ export const selectImage = async (
     path: file.fileName ?? `${id}.jpg`,
     url: data,
   }
+}
+
+export const getRootPageId = async (id: string): Promise<string> => {
+  const data = await fileAdapter.readTextFromInput(`${id}/manifest.json`)
+  const manifest = JSON.parse(data) as { root: string }
+  if (!manifest.root) throw new Error("Could not load manifest - no root found")
+  return manifest.root
+}
+
+export const loadPage = async (
+  boardId: string,
+  pageId: string,
+): Promise<BoardPage> => {
+  const processor = new ObfProcessor({ fileAdapter })
+  const tree = await processor.loadIntoTree(`${boardId}/${pageId}`)
+  return tree.pages[pageId] as BoardPage
 }
 
 export const loadBoardData = async (

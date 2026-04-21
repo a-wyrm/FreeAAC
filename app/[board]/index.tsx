@@ -1,5 +1,4 @@
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
-import { Image } from "expo-image"
 import { Stack, useLocalSearchParams } from "expo-router"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
@@ -8,15 +7,12 @@ import MessageWindow from "../components/MessageWindow"
 import Page from "../components/Page/Page"
 import PageAddSheet from "../components/Page/PageAddSheet"
 import PageNav from "../components/Page/PageNav"
-import {
-  useCurrentPageId,
-  usePagesetActions
-} from "../stores/boards"
+import { useCurrentPageId, usePagesetActions } from "../stores/boards"
 import { useDebounceTime, useMessageWindowLocation } from "../stores/prefs"
-import { generateNewPage, getHomePageId } from "../utils/boards"
+import { generateNewPage } from "../utils/boards"
 import { DebounceContext, handleDebounce } from "../utils/debounce"
 import { handleError } from "../utils/error"
-import { loadBoard, saveBoard } from "../utils/file"
+import { getRootPageId, loadPage, saveBoard } from "../utils/file"
 import { useTheme } from "../utils/theme"
 import { BoardButton, BoardPage, BoardTree, TileImage } from "../utils/types"
 
@@ -26,20 +22,20 @@ export type EditTile = {
   index: number
 }
 
-const prefetchImages = (tree: BoardTree) => {
-  Image.prefetch(
-    Object.values(tree.pages)
-      .map((page) => page.images)
-      .flat()
-      .filter((image) => image !== undefined)
-      .map((image) => {
-        if (image.path || image.data) return undefined
-        if (image.data_url?.startsWith("http")) return image.data_url
-        return image.url
-      })
-      .filter((image) => image !== undefined),
-  )
-}
+// const prefetchImages = (tree: BoardTree) => {
+//   Image.prefetch(
+//     Object.values(tree.pages)
+//       .map((page) => page.images)
+//       .flat()
+//       .filter((image) => image !== undefined)
+//       .map((image) => {
+//         if (image.path || image.data) return undefined
+//         if (image.data_url?.startsWith("http")) return image.data_url
+//         return image.url
+//       })
+//       .filter((image) => image !== undefined),
+//   )
+// }
 
 export default function Board() {
   const theme = useTheme()
@@ -54,6 +50,8 @@ export default function Board() {
   const [tree, setTree] = useState<BoardTree>()
   const pageNavSheet = useRef<TrueSheet>(null)
   const pageAddSheet = useRef<TrueSheet>(null)
+  const [page, setPage] = useState<BoardPage>()
+  const [rootPageId, setRootPageId] = useState<string>()
 
   useEffect(
     () => setCurrentBoardId(board as string),
@@ -63,29 +61,33 @@ export default function Board() {
   useEffect(() => {
     ;(async () => {
       try {
-        const tree = await loadBoard(id)
-        console.log(tree)
-        if (Object.keys(tree.pages).length < 1)
-          return handleError("No pages found")
-        setTree(tree)
-        if (!currentPageId || !(currentPageId in tree.pages)) {
-          const homePageId = getHomePageId(tree)
-          navigateToPage(homePageId)
-        }
-        prefetchImages(tree)
+        if (!currentPageId) return
+        const pageObject = await loadPage(id, currentPageId)
+        setPage(pageObject)
       } catch (e) {
         handleError(e)
       }
     })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [currentPageId, id])
 
-  const page = useMemo(() => {
-    if (!tree || !currentPageId) return
-    if (!(currentPageId in tree.pages))
-      return handleError("Could not find page in tree")
-    return tree.pages[currentPageId]
-  }, [currentPageId, tree])
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const pageId = await getRootPageId(id)
+        navigateToPage(pageId)
+        setRootPageId(pageId)
+      } catch (e) {
+        handleError(e)
+      }
+    })()
+  }, [id, navigateToPage])
+
+  // const page = useMemo(() => {
+  //   if (!tree || !currentPageId) return
+  //
+  //     return handleError("Could not find page in tree")
+  //   return tree.pages[currentPageId]
+  // }, [currentPageId, tree])
 
   const savePage = (page: BoardPage) => {
     if (!tree) return handleError("Could not save page - tree does not exist")
@@ -109,17 +111,17 @@ export default function Board() {
     setTree(newTree)
   }
 
-  const homePageId = useMemo(() => {
-    try {
-      if (tree) return getHomePageId(tree)
-    } catch (e) {
-      handleError(e)
-    }
-  }, [tree])
+  // const homePageId = useMemo(() => {
+  //   try {
+  //     if (tree) return getHomePageId(tree)
+  //   } catch (e) {
+  //     handleError(e)
+  //   }
+  // }, [tree])
 
   const navigateHome = useCallback(
-    () => homePageId && navigateToPage(homePageId),
-    [homePageId, navigateToPage],
+    () => rootPageId && navigateToPage(rootPageId),
+    [navigateToPage, rootPageId],
   )
 
   const buttons = useMemo(() => {
@@ -188,7 +190,7 @@ export default function Board() {
       navigateHome={navigateHome}
       navigateBack={navigateBack}
       buttons={buttons}
-      isHome={homePageId === page?.id}
+      isHome={rootPageId === page?.id}
       pageTitle={page?.name}
       setPageTitle={(name) => page && name && savePage({ ...page, name })}
       openPageNav={() => pageNavSheet.current?.present()}
@@ -246,7 +248,7 @@ export default function Board() {
             <Page
               page={page}
               savePage={savePage}
-              homePageId={homePageId}
+              homePageId={rootPageId}
               pageNames={pageNames}
             />
           )}
