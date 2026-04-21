@@ -32,7 +32,7 @@ export default function BoardOptions({
   const handleExport = async () => {
     if (!board) return handleError("No board found")
     startExporting(async () => {
-      await exportBoard(board.id, board.name)
+      await exportBoard(board.id, board.name, "obz")
       ref.current?.dismiss()
     })
   }
@@ -78,7 +78,7 @@ export default function BoardOptions({
           }}
         />
         <SheetItem
-          label={`Export`}
+          label={`Export as .obz`}
           icon={
             isExporting ?
               <ActivityIndicator size="small" color={theme.onSurface} />

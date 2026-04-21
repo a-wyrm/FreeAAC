@@ -184,16 +184,19 @@ export const loadBoard = async (id: string): Promise<BoardTree> => {
 export const saveBoard = async (id: string, tree: BoardTree) => {
   console.log(`Saving board ${id}`)
   const processor = new ObfProcessor({ fileAdapter })
-  await processor.saveFromTree(tree as unknown as AACTree, id)
+  await processor.saveFromTree(tree as unknown as AACTree, id, true)
 }
 
 export const deleteBoard = async (id: string) => {
   await removePath(id, { recursive: true })
 }
 
-export const exportBoard = async (uri: string, name: string) => {
-  const ext = getFileExt(uri)
-  await saveFileAs(uri, `${name}.${ext}`)
+export const exportBoard = async (id: string, name: string, ext: string) => {
+  const fileName = `${id}.${ext}`
+  const tree = await loadBoard(id)
+  const processor = new ObfProcessor({ fileAdapter })
+  await processor.saveFromTree(tree as unknown as AACTree, fileName, false)
+  await saveFileAs(fileName, `${name}.${ext}`)
 }
 
 export const exportLogs = async (entries: HistoryEntry[]) => {
