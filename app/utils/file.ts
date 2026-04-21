@@ -1,7 +1,8 @@
 import { HistoryEntry } from "@willwade/aac-processors/analytics"
 import {
   AACTree,
-  ObfProcessor
+  getProcessor,
+  ObfProcessor,
 } from "@willwade/aac-processors/browser"
 import { OblUtil } from "@willwade/aac-processors/metrics"
 import * as DocumentPicker from "expo-document-picker"
@@ -163,6 +164,15 @@ export const selectImage = async (
     path: file.fileName ?? `${id}.jpg`,
     url: data,
   }
+}
+
+export const loadBoardData = async (
+  data: Uint8Array,
+  ext: string,
+): Promise<BoardTree> => {
+  const processor = getProcessor(`.${ext}`, { fileAdapter })
+  const tree = await processor.loadIntoTree(data)
+  return tree
 }
 
 export const loadBoard = async (id: string): Promise<BoardTree> => {
