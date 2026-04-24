@@ -16,9 +16,8 @@ import {
   deleteBoardPage,
   getRootPageId,
   loadPage,
-  saveBoard,
   saveBoardPage,
-  saveRootPageId,
+  saveRootPageId
 } from "../utils/file"
 import { useTheme } from "../utils/theme"
 import { BoardButton, BoardPage, BoardTree, TileImage } from "../utils/types"
@@ -144,18 +143,10 @@ export default function Board() {
   }, [tree])
 
   const addPage = async (name: string, rows: number, cols: number) => {
-    if (!tree) return handleError("Could not add page - tree does not exist")
     if (!currentPageId)
       return handleError("Could not add page - current page not found")
     const page = generateNewPage(rows, cols, currentPageId, name)
-    const pages = { ...tree.pages }
-    pages[page.id] = page
-    const newTree = {
-      ...tree,
-      pages,
-    }
-    saveBoard(id, newTree)
-    setTree(newTree)
+    await saveBoardPage(id, page.id, page)
     navigateToPage(page.id)
     pageAddSheet.current?.dismiss()
   }

@@ -33,7 +33,7 @@ export const generateNewPage = (
     .fill(null)
     .map(() => Array(cols).fill(undefined))
   return {
-    id: nanoid(),
+    id: `${nanoid()}.obf`,
     name,
     grid,
     parentId,

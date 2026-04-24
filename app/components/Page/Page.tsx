@@ -134,7 +134,6 @@ export default function Page({
     [
       editMode,
       page.images,
-      page.id,
       setSymbolSearchText,
       playOnPress,
       speak,
