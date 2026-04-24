@@ -3,6 +3,7 @@ import { nanoid } from "nanoid/non-secure"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { LogEvent, parseLogContent, parseLogEvent } from "../utils/logging"
+import { BoardButton } from "../utils/types"
 import { zustandStorage } from "./middleware"
 
 const generateEntry = (content: string): HistoryEntry => {
@@ -19,18 +20,13 @@ interface Board {
   name: string
 }
 
-interface ButtonId {
-  id: string
-  pageId: string
-}
-
 interface PagesetsState {
   loaded: boolean
   boards: Board[]
   currentBoardId: string | undefined
   currentPageId: string | undefined
   previousPageIds: string[]
-  messageButtonsIds: ButtonId[]
+  messageButtons: BoardButton[]
   editMode: boolean
   editButtonId: string | undefined
   symbolSearchText: string
@@ -45,9 +41,9 @@ interface PagesetsState {
     addBoard: (boards: Board) => void
     removeBoard: (id: string) => void
     renameBoard: (id: string, name: string) => void
-    addMessageButtonId: (buttonId: ButtonId) => void
-    removeLastMessageButtonId: () => void
-    clearMessageButtonIds: () => void
+    addMessageButton: (button: BoardButton) => void
+    removeLastMessageButton: () => void
+    clearMessageButtons: () => void
     toggleEditMode: () => void
     setEditButtonId: (buttonId: string | undefined) => void
     setSymbolSearchText: (text: string) => void
@@ -66,7 +62,7 @@ const useStore = create<PagesetsState>()(
       currentBoardId: undefined,
       currentPageId: undefined,
       previousPageIds: [],
-      messageButtonsIds: [],
+      messageButtons: [],
       editMode: false,
       editButtonId: undefined,
       symbolSearchText: "",
@@ -112,17 +108,17 @@ const useStore = create<PagesetsState>()(
           if (board) board.name = name
           set({ boards })
         },
-        addMessageButtonId: (buttonId: ButtonId) =>
+        addMessageButton: (button: BoardButton) =>
           set({
-            messageButtonsIds: [...get().messageButtonsIds, buttonId],
+            messageButtons: [...get().messageButtons, button],
           }),
-        removeLastMessageButtonId: () =>
+        removeLastMessageButton: () =>
           set({
-            messageButtonsIds: get().messageButtonsIds.slice(0, -1),
+            messageButtons: get().messageButtons.slice(0, -1),
           }),
-        clearMessageButtonIds: () =>
+        clearMessageButtons: () =>
           set({
-            messageButtonsIds: [],
+            messageButtons: [],
           }),
         toggleEditMode: () =>
           set({
@@ -191,7 +187,7 @@ export const useBoardsLoaded = () => useStore((s) => s.loaded)
 export const useBoards = () => useStore((s) => s.boards)
 export const useCurrentBoardId = () => useStore((s) => s.currentBoardId)
 export const useCurrentPageId = () => useStore((s) => s.currentPageId)
-export const useMessageButtonsIds = () => useStore((s) => s.messageButtonsIds)
+export const useMessageButtons = () => useStore((s) => s.messageButtons)
 export const useEditMode = () => useStore((s) => s.editMode)
 export const useEditButtonId = () => useStore((s) => s.editButtonId)
 export const useSymbolSearchText = () => useStore((s) => s.symbolSearchText)

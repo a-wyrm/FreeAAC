@@ -30,7 +30,7 @@ export default function PageOptions({
   const theme = useTheme()
   const [showCustomWordDialog, setShowCustomWordDialog] = useState(false)
   const { push } = useRouter()
-  const { toggleEditMode, addCustomMessage, addMessageButtonId, logEvent } =
+  const { toggleEditMode, addCustomMessage, addMessageButton, logEvent } =
     usePagesetActions()
   const currentPageId = useCurrentPageId()
   const playOnPress = usePlayOnPress()
@@ -48,7 +48,7 @@ export default function PageOptions({
       button.label = word
       button.message = word
       addCustomMessage(button.id, button.message)
-      addMessageButtonId({ id: button.id, pageId: currentPageId })
+      addMessageButton(button)
       if (playOnPress) speak(word)
       logEvent({
         type: "button",

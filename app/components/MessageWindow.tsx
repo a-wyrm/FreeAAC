@@ -20,10 +20,9 @@ import { Platform, ScrollView, View } from "react-native"
 import { useSpeak } from "../stores/audio"
 import {
   useCurrentPageId,
-  useCustomMessages,
   useEditMode,
-  useMessageButtonsIds,
-  usePagesetActions,
+  useMessageButtons,
+  usePagesetActions
 } from "../stores/boards"
 import {
   useBackButton,
@@ -35,7 +34,6 @@ import {
 } from "../stores/prefs"
 import { useDebounce } from "../utils/debounce"
 import { HEADER_HEIGHT, ICON_SIZE, PADDING, useTheme } from "../utils/theme"
-import { BoardButton } from "../utils/types"
 import DialogConfirm from "./DialogConfirm"
 import PageOptions from "./Page/PageOptions"
 import PageTitle from "./Page/PageTitle"
@@ -45,7 +43,6 @@ import TileImage from "./Tile/TileImage"
 export default function MessageWindow({
   navigateHome,
   navigateBack,
-  buttons,
   isHome,
   pageTitle,
   setPageTitle,
@@ -57,7 +54,6 @@ export default function MessageWindow({
 }: {
   navigateHome: () => void
   navigateBack: () => void
-  buttons: { button: BoardButton; pageId: string }[]
   isHome: boolean
   pageTitle?: string
   setPageTitle: (title: string | undefined) => void
@@ -75,19 +71,18 @@ export default function MessageWindow({
     useState(false)
   const [showDeletePageDialog, setShowDeletePageDialog] = useState(false)
   const scrollView = useRef<ScrollView>(null)
-  const messageButtonsIds = useMessageButtonsIds()
+  const messageButtons = useMessageButtons()
   const clearMessageOnPlay = useClearMessageOnPlay()
   const showShareButton = useShowShareButton()
   const showBackspace = useShowBackspace()
   const buttonView = useButtonView()
   const labelLocation = useLabelLocation()
   const editMode = useEditMode()
-  const customMessages = useCustomMessages()
   const backButton = useBackButton()
   const currentPageId = useCurrentPageId()
   const {
-    removeLastMessageButtonId,
-    clearMessageButtonIds,
+    removeLastMessageButton,
+    clearMessageButtons,
     toggleEditMode,
     logEvent,
   } = usePagesetActions()
@@ -96,21 +91,10 @@ export default function MessageWindow({
   const isDefaultPage =
     defaultPageId !== undefined && defaultPageId === currentPageId
 
-  const hasMessage = messageButtonsIds.length > 0
+  const hasMessage = messageButtons.length > 0
   const showSymbols = buttonView === "both" || buttonView === "symbol"
   const showText = buttonView === "both" || buttonView === "text"
 
-  const messageButtons = messageButtonsIds
-    .map((m) => {
-      const matchingButton = buttons.find(
-        (b) => b.button.id === m.id && b.pageId === m.pageId,
-      )
-      if (matchingButton) return matchingButton.button
-      if (m.id in customMessages)
-        return { label: customMessages[m.id], image: undefined }
-      return undefined
-    })
-    .filter((b) => b !== undefined)
   const message = messageButtons.map((b) => b.label).join(" ")
 
   const copyMessage = async () => {
@@ -124,14 +108,14 @@ export default function MessageWindow({
     debounce(() => {
       speak(message, {
         onDone: () => {
-          if (clearMessageOnPlay) clearMessageButtonIds()
+          if (clearMessageOnPlay) clearMessageButtons()
         },
       })
       logEvent({ type: "sentence", content: message })
     })
 
   const navigateMenu = () => {
-    clearMessageButtonIds()
+    clearMessageButtons()
     replace("/")
   }
 
@@ -279,7 +263,7 @@ export default function MessageWindow({
                     <Button
                       variant="ghost"
                       onPress={() => {
-                        removeLastMessageButtonId()
+                        removeLastMessageButton()
                         logEvent({ type: "backspace" })
                       }}
                     >
@@ -289,7 +273,7 @@ export default function MessageWindow({
                   <Button
                     variant="ghost"
                     onPress={() => {
-                      clearMessageButtonIds()
+                      clearMessageButtons()
                       logEvent({ type: "clear" })
                     }}
                   >

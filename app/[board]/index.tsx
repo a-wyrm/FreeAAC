@@ -86,21 +86,6 @@ export default function Board() {
     [navigateToPage, rootPageId],
   )
 
-  const buttons = useMemo(() => {
-    if (!tree) return []
-    return Object.values(tree.pages)
-      .map((page) => {
-        const buttons = page.buttons as BoardButton[]
-        return buttons.map((button) => {
-          return {
-            button,
-            pageId: page.id,
-          }
-        })
-      })
-      .flat()
-  }, [tree])
-
   const pageNames = useMemo(() => {
     if (!tree) return []
     return Object.values(tree.pages).map(({ id, name }) => ({
@@ -133,7 +118,6 @@ export default function Board() {
     <MessageWindow
       navigateHome={navigateHome}
       navigateBack={navigateBack}
-      buttons={buttons}
       isHome={rootPageId === page?.id}
       pageTitle={page?.name}
       setPageTitle={(name) => page && name && savePage({ ...page, name })}
