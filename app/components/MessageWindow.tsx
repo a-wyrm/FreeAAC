@@ -63,6 +63,7 @@ export default function MessageWindow({
   openAddPage: () => void
 }) {
   const theme = useTheme()
+  const { boardId, pageId } = useLocalSearchParams()
   const debounce = useDebounce()
   const optionsSheet = useRef<TrueSheet>(null)
   const [copied, setCopied] = useState(false)
@@ -78,7 +79,6 @@ export default function MessageWindow({
   const labelLocation = useLabelLocation()
   const editMode = useEditMode()
   const backButton = useBackButton()
-  const { pageId } = useLocalSearchParams()
   const {
     removeLastMessageButton,
     clearMessageButtons,
@@ -98,7 +98,7 @@ export default function MessageWindow({
   const copyMessage = async () => {
     const success = await Clipboard.setStringAsync(message)
     if (success) setCopied(true)
-    logEvent({ type: "copy" })
+    logEvent({ type: "copy" }, pageId as string, boardId as string)
   }
   useEffect(() => setCopied(false), [message])
 
@@ -109,7 +109,11 @@ export default function MessageWindow({
           if (clearMessageOnPlay) clearMessageButtons()
         },
       })
-      logEvent({ type: "sentence", content: message })
+      logEvent(
+        { type: "sentence", content: message },
+        pageId as string,
+        boardId as string,
+      )
     })
 
   const navigateMenu = () => {
@@ -178,7 +182,11 @@ export default function MessageWindow({
                   variant="ghost"
                   onPress={() => {
                     navigateHome()
-                    logEvent({ type: "home" })
+                    logEvent(
+                      { type: "home" },
+                      pageId as string,
+                      boardId as string,
+                    )
                   }}
                 >
                   <Home size={ICON_SIZE.xl} color={theme.onSurface} />
@@ -189,7 +197,11 @@ export default function MessageWindow({
                   variant="ghost"
                   onPress={() => {
                     navigateBack()
-                    logEvent({ type: "back" })
+                    logEvent(
+                      { type: "back" },
+                      pageId as string,
+                      boardId as string,
+                    )
                   }}
                 >
                   <ArrowLeft size={ICON_SIZE.xl} color={theme.onSurface} />
@@ -262,7 +274,11 @@ export default function MessageWindow({
                       variant="ghost"
                       onPress={() => {
                         removeLastMessageButton()
-                        logEvent({ type: "backspace" })
+                        logEvent(
+                          { type: "backspace" },
+                          pageId as string,
+                          boardId as string,
+                        )
                       }}
                     >
                       <Delete size={ICON_SIZE.xl} color={theme.onSurface} />
@@ -272,7 +288,11 @@ export default function MessageWindow({
                     variant="ghost"
                     onPress={() => {
                       clearMessageButtons()
-                      logEvent({ type: "clear" })
+                      logEvent(
+                        { type: "clear" },
+                        pageId as string,
+                        boardId as string,
+                      )
                     }}
                   >
                     <X size={ICON_SIZE.xl} color={theme.onSurface} />

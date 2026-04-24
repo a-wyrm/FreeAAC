@@ -28,11 +28,11 @@ export default function PageOptions({
   openPageNav: () => void
 }) {
   const theme = useTheme()
+  const { boardId, pageId } = useLocalSearchParams()
   const [showCustomWordDialog, setShowCustomWordDialog] = useState(false)
   const { push } = useRouter()
   const { toggleEditMode, addCustomMessage, addMessageButton, logEvent } =
     usePagesetActions()
-  const { pageId } = useLocalSearchParams()
   const playOnPress = usePlayOnPress()
 
   const requestFullscreen = () => {
@@ -50,11 +50,15 @@ export default function PageOptions({
       addCustomMessage(button.id, button.message)
       addMessageButton(button)
       if (playOnPress) speak(word)
-      logEvent({
-        type: "button",
-        button,
-        spoken: playOnPress,
-      })
+      logEvent(
+        {
+          type: "button",
+          button,
+          spoken: playOnPress,
+        },
+        pageId as string,
+        boardId as string,
+      )
     }
     setShowCustomWordDialog(false)
   }

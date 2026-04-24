@@ -29,8 +29,8 @@ export default function BoardList() {
                 style={{ justifyContent: "flex-start", flex: 1 }}
                 onPress={() => {
                   router.push({
-                    pathname: "/[board]",
-                    params: { board: item.id },
+                    pathname: "/[boardId]",
+                    params: { boardId: item.id },
                   })
                 }}
               >

@@ -30,7 +30,10 @@ export default function RootLayout() {
   useFocusEffect(() => {
     if (firstLaunch && defaultBoardId) {
       console.log("redirecting to ", defaultBoardId)
-      router.push({ pathname: "/[board]", params: { board: defaultBoardId } })
+      router.push({
+        pathname: "/[boardId]",
+        params: { boardId: defaultBoardId },
+      })
     }
     setFirstLaunch(false)
   })
