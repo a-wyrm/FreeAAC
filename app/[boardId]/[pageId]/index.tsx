@@ -8,6 +8,7 @@ import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
 import { handleError } from "@/app/utils/error"
 import {
   deleteBoardPage,
+  getRootPageId,
   loadPage,
   saveBoardPage,
   saveRootPageId,
@@ -52,6 +53,16 @@ export default function PageRoute() {
     })()
   }, [currentPageId, id])
 
+  useEffect(() => {
+    ;(async () => {
+      try {
+        setRootPageId(await getRootPageId(id))
+      } catch (e) {
+        handleError(e)
+      }
+    })()
+  }, [id])
+
   const savePage = async (page: BoardPage) => {
     if (!currentPageId) return handleError("Could not save page - ID undefined")
     console.log("Saving page", page)
@@ -59,10 +70,9 @@ export default function PageRoute() {
     await saveBoardPage(id, currentPageId, page)
   }
 
-  const navigateHome = useCallback(
-    () => rootPageId && replace(`/${boardId}/${rootPageId}`),
-    [boardId, replace, rootPageId],
-  )
+  const navigateHome = () => {
+    if (rootPageId) replace(`/${boardId}/${rootPageId}`)
+  }
 
   // TODO implement pageNames
   const pageNames: { value: string; label: string }[] = []
