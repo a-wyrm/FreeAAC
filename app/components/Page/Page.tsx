@@ -13,7 +13,7 @@ import {
   StyleSheet,
   View,
 } from "react-native"
-import { EditTile } from "../../[board]"
+import { EditTile } from "../../[boardId]"
 import { useSpeak } from "../../stores/audio"
 import { useEditMode, usePagesetActions } from "../../stores/boards"
 import {

@@ -1,26 +1,26 @@
-import { TrueSheet } from "@lodev09/react-native-true-sheet"
-import { Stack, useLocalSearchParams } from "expo-router"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { ActivityIndicator, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import MessageWindow from "../components/MessageWindow"
-import Page from "../components/Page/Page"
-import PageAddSheet from "../components/Page/PageAddSheet"
-import PageNav from "../components/Page/PageNav"
-import { useCurrentPageId, usePagesetActions } from "../stores/boards"
-import { useDebounceTime, useMessageWindowLocation } from "../stores/prefs"
-import { generateNewPage } from "../utils/boards"
-import { DebounceContext, handleDebounce } from "../utils/debounce"
-import { handleError } from "../utils/error"
+import MessageWindow from "@/app/components/MessageWindow"
+import Page from "@/app/components/Page/Page"
+import PageAddSheet from "@/app/components/Page/PageAddSheet"
+import PageNav from "@/app/components/Page/PageNav"
+import { usePagesetActions } from "@/app/stores/boards"
+import { useDebounceTime, useMessageWindowLocation } from "@/app/stores/prefs"
+import { generateNewPage } from "@/app/utils/boards"
+import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
+import { handleError } from "@/app/utils/error"
 import {
   deleteBoardPage,
   getRootPageId,
   loadPage,
   saveBoardPage,
   saveRootPageId,
-} from "../utils/file"
-import { useTheme } from "../utils/theme"
-import { BoardButton, BoardPage, TileImage } from "../utils/types"
+} from "@/app/utils/file"
+import { useTheme } from "@/app/utils/theme"
+import { BoardButton, BoardPage, TileImage } from "@/app/utils/types"
+import { TrueSheet } from "@lodev09/react-native-true-sheet"
+import { Stack, useLocalSearchParams } from "expo-router"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { ActivityIndicator, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export type EditTile = {
   button: BoardButton | undefined
@@ -28,14 +28,15 @@ export type EditTile = {
   index: number
 }
 
-export default function Board() {
+export default function PageRoute() {
   const theme = useTheme()
   const debounceTime = useDebounceTime()
   const lastTimeRef = useRef(0)
-  const { board } = useLocalSearchParams()
-  const id = board as string
+  const { boardId, pageId } = useLocalSearchParams()
+  const id = boardId as string
+  const currentPageId = pageId as string
   const messageWindowLocation = useMessageWindowLocation()
-  const currentPageId = useCurrentPageId()
+  // const currentPageId = useCurrentPageId()
   const { navigateToPage, navigateBack, setCurrentBoardId } =
     usePagesetActions()
   const pageNavSheet = useRef<TrueSheet>(null)
@@ -44,8 +45,8 @@ export default function Board() {
   const [rootPageId, setRootPageId] = useState<string>()
 
   useEffect(
-    () => setCurrentBoardId(board as string),
-    [board, setCurrentBoardId],
+    () => setCurrentBoardId(boardId as string),
+    [boardId, setCurrentBoardId],
   )
 
   useEffect(() => {
