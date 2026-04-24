@@ -12,7 +12,12 @@ import { useDebounceTime, useMessageWindowLocation } from "../stores/prefs"
 import { generateNewPage } from "../utils/boards"
 import { DebounceContext, handleDebounce } from "../utils/debounce"
 import { handleError } from "../utils/error"
-import { getRootPageId, loadPage, saveBoard } from "../utils/file"
+import {
+  getRootPageId,
+  loadPage,
+  saveBoard,
+  saveBoardPage,
+} from "../utils/file"
 import { useTheme } from "../utils/theme"
 import { BoardButton, BoardPage, BoardTree, TileImage } from "../utils/types"
 
@@ -67,26 +72,11 @@ export default function Board() {
     })()
   }, [id, navigateToPage])
 
-  const savePage = (page: BoardPage) => {
-    if (!tree) return handleError("Could not save page - tree does not exist")
+  const savePage = async (page: BoardPage) => {
     if (!currentPageId) return handleError("Could not save page - ID undefined")
     console.log("Saving page", page)
-    const pages = { ...tree.pages }
-    pages[currentPageId] = {
-      ...pages[currentPageId],
-      ...page,
-    }
-    const metadata = { ...tree.metadata }
-    if (currentPageId === metadata.defaultHomePageId) {
-      metadata.name = page.name
-    }
-    const newTree = {
-      ...tree,
-      metadata,
-      pages,
-    }
-    saveBoard(id, newTree)
-    setTree(newTree)
+    setPage(page)
+    await saveBoardPage(id, currentPageId, page)
   }
 
   const navigateHome = useCallback(
