@@ -1,6 +1,6 @@
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
 import { Stack, useLocalSearchParams } from "expo-router"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import MessageWindow from "../components/MessageWindow"
@@ -17,10 +17,10 @@ import {
   getRootPageId,
   loadPage,
   saveBoardPage,
-  saveRootPageId
+  saveRootPageId,
 } from "../utils/file"
 import { useTheme } from "../utils/theme"
-import { BoardButton, BoardPage, BoardTree, TileImage } from "../utils/types"
+import { BoardButton, BoardPage, TileImage } from "../utils/types"
 
 export type EditTile = {
   button: BoardButton | undefined
@@ -38,7 +38,6 @@ export default function Board() {
   const currentPageId = useCurrentPageId()
   const { navigateToPage, navigateBack, setCurrentBoardId } =
     usePagesetActions()
-  const [tree, setTree] = useState<BoardTree>()
   const pageNavSheet = useRef<TrueSheet>(null)
   const pageAddSheet = useRef<TrueSheet>(null)
   const [page, setPage] = useState<BoardPage>()
@@ -85,13 +84,10 @@ export default function Board() {
     [navigateToPage, rootPageId],
   )
 
-  const pageNames = useMemo(() => {
-    if (!tree) return []
-    return Object.values(tree.pages).map(({ id, name }) => ({
-      value: id,
-      label: name,
-    }))
-  }, [tree])
+  // TODO implement pageNames
+  const pageNames: { value: string; label: string }[] = []
+  // TODO implement pages
+  const pages: { name: string; id: string }[] = []
 
   const deletePage = async () => {
     if (!currentPageId)
@@ -133,14 +129,6 @@ export default function Board() {
       handleDebounce(action, debounceTime, lastTimeRef),
     [debounceTime],
   )
-
-  const pages = useMemo(() => {
-    if (!tree) return []
-    return Object.entries(tree.pages).map(([id, page]) => ({
-      id,
-      name: page.name,
-    }))
-  }, [tree])
 
   const addPage = async (name: string, rows: number, cols: number) => {
     if (!currentPageId)
