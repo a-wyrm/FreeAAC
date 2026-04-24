@@ -17,7 +17,8 @@ import {
   getRootPageId,
   loadPage,
   saveBoard,
-  saveBoardPage
+  saveBoardPage,
+  saveRootPageId,
 } from "../utils/file"
 import { useTheme } from "../utils/theme"
 import { BoardButton, BoardPage, BoardTree, TileImage } from "../utils/types"
@@ -119,21 +120,13 @@ export default function Board() {
     navigateHome()
   }
 
-  const setDefaultPageId = (defaultHomePageId: string) => {
-    if (!tree)
-      return handleError("Could not set default page - tree does not exist")
-    if (!(defaultHomePageId in tree.pages))
-      return handleError("Could not set default page - page ID not found")
-    const newTree = {
-      ...tree,
-      metadata: {
-        ...tree.metadata,
-        defaultHomePageId,
-        name: tree.pages[defaultHomePageId].name,
-      },
+  const setDefaultPageId = async (defaultHomePageId: string) => {
+    try {
+      await saveRootPageId(id, defaultHomePageId)
+      setRootPageId(defaultHomePageId)
+    } catch (e) {
+      handleError(e)
     }
-    saveBoard(id, newTree)
-    setTree(newTree)
   }
 
   const messageWindow = (
@@ -146,7 +139,7 @@ export default function Board() {
       setPageTitle={(name) => page && name && savePage({ ...page, name })}
       openPageNav={() => pageNavSheet.current?.present()}
       deletePage={deletePage}
-      defaultPageId={tree?.metadata.defaultHomePageId}
+      defaultPageId={rootPageId}
       setDefaultPageId={setDefaultPageId}
       openAddPage={() => pageAddSheet.current?.present()}
     />

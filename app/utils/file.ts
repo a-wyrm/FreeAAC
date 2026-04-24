@@ -196,10 +196,19 @@ export const saveManifest = async (id: string, manifest: ObfManifest) => {
   fileAdapter.writeTextToPath(`${id}/manifest.json`, JSON.stringify(manifest))
 }
 
-export const getRootPageId = async (id: string): Promise<string> => {
-  const manifest = await loadManifest(id)
+export const getRootPageId = async (boardId: string): Promise<string> => {
+  const manifest = await loadManifest(boardId)
   if (!manifest.root) throw new Error("Could not load manifest - no root found")
   return manifest.root
+}
+export const saveRootPageId = async (boardId: string, pageId: string) => {
+  const manifest = await loadManifest(boardId)
+  if (!manifest.paths?.boards)
+    throw new Error("Could not load manifest - no boards listed")
+  if (!manifest.paths?.boards[pageId])
+    throw new Error("Could not find page in manifest")
+  manifest.root = pageId
+  await saveManifest(boardId, manifest)
 }
 
 export const loadPage = async (
