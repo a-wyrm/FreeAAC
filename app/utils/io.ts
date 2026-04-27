@@ -1,5 +1,18 @@
-import { DocumentPickerAsset } from "expo-document-picker"
-import { Paths } from "expo-file-system"
+import { DocumentPickerAsset } from "expo-document-picker";
+import { Paths } from "expo-file-system";
+
+const parsePath = async (
+  path: string,
+  options?: { create: boolean },
+): Promise<{ dir: FileSystemDirectoryHandle; filename: string }> => {
+  const root = await navigator.storage.getDirectory()
+  const dirname = Paths.dirname(path)
+  const basename = Paths.basename(path)
+  console.log({ path, dirname, basename })
+  const dir =
+    dirname === "." ? root : await root.getDirectoryHandle(dirname, options)
+  return { dir, filename: basename }
+}
 
 export const pathExists = async (path: string): Promise<boolean> => {
   const root = await navigator.storage.getDirectory()
@@ -40,8 +53,8 @@ export const mkDir = async (
   path: string,
   options?: { recursive?: boolean },
 ): Promise<void> => {
-  const root = await navigator.storage.getDirectory()
-  await root.getDirectoryHandle(path, { create: true })
+  const { dir, filename } = await parsePath(path)
+  await dir.getDirectoryHandle(filename, { create: true })
 }
 
 export const listDir = async (path: string): Promise<string[]> => {
@@ -58,11 +71,8 @@ export const removePath = async (
   path: string,
   options?: { recursive?: boolean; force?: boolean },
 ): Promise<void> => {
-  const root = await navigator.storage.getDirectory()
-  const dirname = Paths.dirname(path)
-  const basename = Paths.basename(path)
-  const dir = dirname === "." ? root : await root.getDirectoryHandle(dirname)
-  await dir.removeEntry(basename, options)
+  const { dir, filename } = await parsePath(path)
+  await dir.removeEntry(filename, options)
 }
 
 export const mkTempDir = async (prefix: string): Promise<string> => {
@@ -77,18 +87,12 @@ export const getFileFromDocument = (asset: DocumentPickerAsset): File => {
 }
 
 export const saveFile = async (
-  fileName: string,
+  path: string,
   data: Uint8Array,
 ): Promise<string> => {
   try {
-    const dirname = Paths.dirname(fileName)
-    const baseName = Paths.basename(fileName)
-    const root = await navigator.storage.getDirectory()
-    const dir =
-      dirname === "." ? root : (
-        await root.getDirectoryHandle(dirname, { create: true })
-      )
-    const fileHandle = await dir.getFileHandle(baseName, { create: true })
+    const { dir, filename } = await parsePath(path, { create: true })
+    const fileHandle = await dir.getFileHandle(filename, { create: true })
     const writable = await fileHandle.createWritable()
     await writable.write(data as BufferSource)
     await writable.close()
@@ -99,15 +103,12 @@ export const saveFile = async (
       })
     throw e
   }
-  return fileName
+  return path
 }
 
-export const loadFile = async (fileName: string): Promise<Uint8Array> => {
-  const dirname = Paths.dirname(fileName)
-  const baseName = Paths.basename(fileName)
-  const root = await navigator.storage.getDirectory()
-  const dir = dirname === "." ? root : await root.getDirectoryHandle(dirname)
-  const fileHandle = await dir.getFileHandle(baseName)
+export const loadFile = async (path: string): Promise<Uint8Array> => {
+  const { dir, filename } = await parsePath(path)
+  const fileHandle = await dir.getFileHandle(filename)
   const file = await fileHandle.getFile()
   return await file.bytes()
 }
