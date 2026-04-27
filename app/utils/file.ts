@@ -160,6 +160,7 @@ export const importBoard = async (
   const tree = await loadBoardData(data, ext)
   await saveBoard(id, tree)
   const manifest = await loadManifest(id)
+  console.log("loaded manifest", manifest)
   if (!manifest.paths?.boards) throw new Error("No boards in manifest")
   const pages: Record<string, { name: string; path: string }> = {}
   for (const [id, page] of Object.entries(tree.pages)) {
@@ -232,10 +233,9 @@ export const saveRootPageId = async (boardId: string, pageId: string) => {
 export const loadPage = async (
   boardId: string,
   pageId: string,
+  pages: Record<string, { path: string }>,
 ): Promise<BoardPage> => {
-  const manifest = await loadManifest(boardId)
-  if (!manifest.paths?.boards) throw new Error("No boards listed in manifest")
-  const path = manifest.paths.boards[pageId]
+  const path = pages[pageId].path
   const processor = new ObfProcessor({ fileAdapter })
   const tree = await processor.loadIntoTree(`${boardId}/${path}`)
   return tree.pages[pageId] as BoardPage

@@ -53,14 +53,14 @@ export default function PageRoute() {
   useEffect(() => {
     ;(async () => {
       try {
-        if (!currentPageId) return
-        const pageObject = await loadPage(id, currentPageId)
+        if (!currentPageId || !board?.pages) return
+        const pageObject = await loadPage(id, currentPageId, board.pages)
         setPage(pageObject)
       } catch (e) {
         handleError(e)
       }
     })()
-  }, [currentPageId, id])
+  }, [currentPageId, id, board])
 
   useEffect(() => {
     ;(async () => {
