@@ -47,19 +47,20 @@ export default function PageRoute() {
   )
   const { push, replace, back } = useRouter()
   const { updateBoard } = usePagesetActions()
+  const path = pages.find((p) => p.id === pageId)?.path
 
   // Load page from .obf file
   useEffect(() => {
     ;(async () => {
       try {
-        if (!currentPageId || !board?.pages) return
-        const pageObject = await loadPage(id, currentPageId, board.pages)
+        if (!currentPageId || !path) return
+        const pageObject = await loadPage(id, currentPageId, path)
         setPage(pageObject)
       } catch (e) {
         handleError(e)
       }
     })()
-  }, [currentPageId, id, board])
+  }, [currentPageId, id, path])
 
   // Load root page from manifest if unknown
   useEffect(() => {

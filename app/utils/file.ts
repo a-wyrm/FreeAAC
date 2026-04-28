@@ -237,10 +237,8 @@ export const saveRootPageId = async (boardId: string, pageId: string) => {
 export const loadPage = async (
   boardId: string,
   pageId: string,
-  pages: PageItem[],
+  path: string,
 ): Promise<BoardPage> => {
-  const path = pages.find((p) => p.id === pageId)?.path
-  if (!path) throw new Error(`Could not find page path for ${pageId}`)
   const processor = new ObfProcessor({ fileAdapter })
   const tree = await processor.loadIntoTree(`${boardId}/${path}`)
   return tree.pages[pageId] as BoardPage
