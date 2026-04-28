@@ -2,7 +2,7 @@ import MessageWindow from "@/app/components/MessageWindow"
 import Page from "@/app/components/Page/Page"
 import PageAddSheet from "@/app/components/Page/PageAddSheet"
 import PageNav from "@/app/components/Page/PageNav"
-import { useBoards } from "@/app/stores/boards"
+import { useBoards, usePagesetActions } from "@/app/stores/boards"
 import { useDebounceTime, useMessageWindowLocation } from "@/app/stores/prefs"
 import { generateNewPage } from "@/app/utils/boards"
 import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
@@ -12,7 +12,7 @@ import {
   loadManifest,
   loadPage,
   saveBoardPage,
-  saveRootPageId,
+  saveManifest,
 } from "@/app/utils/file"
 import { useTheme } from "@/app/utils/theme"
 import { BoardButton, BoardPage, TileImage } from "@/app/utils/types"
@@ -47,9 +47,13 @@ export default function PageRoute() {
         return { ...page, id }
       })
     : []
-  const [rootPageId, setRootPageId] = useState<string>()
+  const [rootPageState, setRootPageState] = useState<string | undefined>(
+    board?.rootPage,
+  )
   const { push, replace, back } = useRouter()
+  const { setRootPage } = usePagesetActions()
 
+  // Load page from .obf file
   useEffect(() => {
     ;(async () => {
       try {
@@ -62,16 +66,20 @@ export default function PageRoute() {
     })()
   }, [currentPageId, id, board])
 
+  // Load root page from manifest if unknown
   useEffect(() => {
     ;(async () => {
+      if (rootPageState) return
       try {
         const manifest = await loadManifest(id)
-        setRootPageId(manifest.root)
+        if (!manifest.root) return handleError("No root in manifest")
+        setRootPage(id, manifest.root)
+        setRootPageState(manifest.root)
       } catch (e) {
         handleError(e)
       }
     })()
-  }, [boards, id])
+  }, [boards, id, rootPageState, setRootPage])
 
   const savePage = async (page: BoardPage) => {
     if (!currentPageId) return handleError("Could not save page - ID undefined")
@@ -81,7 +89,7 @@ export default function PageRoute() {
   }
 
   const navigateHome = () => {
-    if (rootPageId) replace(`/${boardId}/${rootPageId}`)
+    if (rootPageState) replace(`/${boardId}/${rootPageState}`)
   }
 
   const deletePage = async () => {
@@ -95,10 +103,13 @@ export default function PageRoute() {
     navigateHome()
   }
 
-  const setDefaultPageId = async (defaultHomePageId: string) => {
+  const setRoot = async (defaultHomePageId: string) => {
     try {
-      await saveRootPageId(id, defaultHomePageId)
-      setRootPageId(defaultHomePageId)
+      const manifest = await loadManifest(id)
+      manifest.root = defaultHomePageId
+      await saveManifest(id, manifest)
+      setRootPage(id, defaultHomePageId)
+      setRootPageState(defaultHomePageId)
     } catch (e) {
       handleError(e)
     }
@@ -108,13 +119,13 @@ export default function PageRoute() {
     <MessageWindow
       navigateHome={navigateHome}
       navigateBack={back}
-      isHome={rootPageId === page?.id}
+      isHome={rootPageState === page?.id}
       pageTitle={page?.name}
       setPageTitle={(name) => page && name && savePage({ ...page, name })}
       openPageNav={() => pageNavSheet.current?.present()}
       deletePage={deletePage}
-      defaultPageId={rootPageId}
-      setDefaultPageId={setDefaultPageId}
+      rootPage={rootPageState}
+      setRootPage={setRoot}
       openAddPage={() => pageAddSheet.current?.present()}
     />
   )

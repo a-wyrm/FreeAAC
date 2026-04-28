@@ -18,6 +18,7 @@ const generateEntry = (content: string): HistoryEntry => {
 interface Board {
   id: string
   name: string
+  rootPage?: string
   pages?: Record<
     string,
     {
@@ -52,6 +53,7 @@ interface PagesetsState {
     logEvent(event: LogEvent, pageId: string, boardId: string): void
     toggleShouldLog(): void
     deleteLogs(): void
+    setRootPage: (boardId: string, rootPage: string) => void
   }
 }
 
@@ -135,6 +137,12 @@ const useStore = create<PagesetsState>()(
         },
         deleteLogs: () => {
           set({ history: [] })
+        },
+        setRootPage: (boardId: string, rootPage: string) => {
+          const boards = [...get().boards]
+          const board = boards.find((b) => b.id === boardId)
+          if (board) board.rootPage = rootPage
+          set({ boards })
         },
       },
     }),

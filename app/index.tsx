@@ -32,9 +32,9 @@ export default function Index() {
   const openFile = async () => {
     try {
       startLoading(async () => {
-        const { id, name, pages } = await importBoardFile()
-        addBoard({ id, name, pages })
-        router.push({ pathname: "/[boardId]", params: { boardId: id } })
+        const board = await importBoardFile()
+        addBoard(board)
+        router.push({ pathname: "/[boardId]", params: { boardId: board.id } })
       })
     } catch (e) {
       handleError(e)

@@ -47,8 +47,8 @@ export default function MessageWindow({
   setPageTitle,
   openPageNav,
   deletePage,
-  defaultPageId,
-  setDefaultPageId,
+  rootPage,
+  setRootPage,
   openAddPage,
 }: {
   navigateHome: () => void
@@ -58,8 +58,8 @@ export default function MessageWindow({
   setPageTitle: (title: string | undefined) => void
   openPageNav: () => void
   deletePage: () => void
-  defaultPageId?: string
-  setDefaultPageId: (id: string) => void
+  rootPage?: string
+  setRootPage: (id: string) => void
   openAddPage: () => void
 }) {
   const theme = useTheme()
@@ -87,7 +87,7 @@ export default function MessageWindow({
   } = usePagesetActions()
   const speak = useSpeak()
   const { replace } = useRouter()
-  const isDefaultPage = defaultPageId !== undefined && defaultPageId === pageId
+  const isRootPage = rootPage !== undefined && rootPage === pageId
 
   const hasMessage = messageButtons.length > 0
   const showSymbols = buttonView === "both" || buttonView === "symbol"
@@ -146,23 +146,23 @@ export default function MessageWindow({
               <Button
                 variant="ghost"
                 onPress={() => setShowDeletePageDialog(true)}
-                disabled={isDefaultPage}
+                disabled={isRootPage}
               >
                 <Trash2
                   size={ICON_SIZE.xl}
-                  color={isDefaultPage ? theme.outline : theme.onSurface}
+                  color={isRootPage ? theme.outline : theme.onSurface}
                 />
               </Button>
               <Button
                 variant="ghost"
                 onPress={() => setShowSetDefaultPageDialog(true)}
-                disabled={isDefaultPage}
+                disabled={isRootPage}
               >
                 <Star
                   size={ICON_SIZE.xl}
-                  color={isDefaultPage ? theme.outline : theme.onSurface}
+                  color={isRootPage ? theme.outline : theme.onSurface}
                   fill={theme.outline}
-                  fillOpacity={isDefaultPage ? 1 : 0}
+                  fillOpacity={isRootPage ? 1 : 0}
                 />
               </Button>
               <Button variant="ghost" onPress={openPageNav}>
@@ -331,7 +331,7 @@ export default function MessageWindow({
         message="Are you sure you want to set this as the starting page in this board?"
         onCancel={() => setShowSetDefaultPageDialog(false)}
         onConfirm={() => {
-          if (pageId) setDefaultPageId(pageId as string)
+          if (pageId) setRootPage(pageId as string)
           setShowSetDefaultPageDialog(false)
         }}
         confirmLabel="Yes"

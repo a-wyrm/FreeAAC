@@ -26,9 +26,12 @@ export default function BoardCard({ board }: { board: BoardTemplate }) {
   const load = () => {
     startLoading(async () => {
       try {
-        const { id, pages } = await importBoard(board.url)
-        addBoard({ id, name: board.name, pages })
-        replace({ pathname: "/[boardId]", params: { boardId: id } })
+        const importedBoard = await importBoard(board.url)
+        addBoard({ ...importedBoard, name: board.name })
+        replace({
+          pathname: "/[boardId]",
+          params: { boardId: importedBoard.id },
+        })
       } catch (e) {
         console.error(e)
         handleError("Unable to download file")
