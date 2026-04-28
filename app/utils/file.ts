@@ -119,56 +119,65 @@ export const getFileType = (ext: string): { mimeType: string; UTI: string } => {
   }
 }
 
-const processBoardData = async (
-  data: Uint8Array,
-  ext: string,
-  name?: string,
-) => {
-  const id = uuid()
-  const fileName = `${id}.${ext}`
-  await saveFile(fileName, data)
+type ProcessedBoard = {
+  id: string
+  name: string
+  pages: Record<string, { name: string; path: string }>
+  rootPage: string
+}
 
-  const tree = await loadBoard(fileName)
+const processImportedBoard = async (
+  id: string,
+  tree: AACTree,
+): Promise<ProcessedBoard> => {
   await saveBoard(id, tree)
 
   const manifest = await loadManifest(id)
+
   if (!manifest.paths?.boards) throw new Error("No boards in manifest")
   if (!manifest.root) throw new Error("No root page in manifest")
 
   const pages: Record<string, { name: string; path: string }> = {}
-  for (const [pageId, page] of Object.entries(tree.pages)) {
+
+  for (const [pageId, page] of Object.entries<BoardPage>(tree.pages)) {
     pages[pageId] = { name: page.name, path: manifest.paths.boards[pageId] }
   }
 
-  return {
-    id,
-    pages,
-    rootPage: manifest.root,
-    name: name ?? tree.metadata.name ?? "Untitled board",
-  }
+  const rootPage = manifest.root
+  const name = tree.metadata?.name ?? "Untitled board"
+
+  return { id, name, pages, rootPage }
 }
-export const importBoardFile = async () => {
+
+export const importBoardFile = async (): Promise<ProcessedBoard> => {
   const result = await DocumentPicker.getDocumentAsync({
     copyToCacheDirectory: true,
   })
+
   const asset = result.assets?.at(0)
   if (!asset) throw "No file selected"
 
   const file = getFileFromDocument(asset)
   const data = await file.bytes()
   const ext = getFileExt(asset.name)
+  const id = uuid()
+  const fileName = `${id}.${ext}`
 
-  return await processBoardData(data, ext, asset.name)
+  await saveFile(fileName, data)
+  const tree = await loadBoard(fileName)
+
+  return processImportedBoard(id, tree)
 }
 
-export const importBoard = async (url: string) => {
-  const fileName = url.split("/").slice(-1)[0]
-  const ext = getFileExt(fileName)
+export const importBoard = async (url: string): Promise<ProcessedBoard> => {
+  const ext = getFileExt(url.split("/").slice(-1)[0])
+  const id = uuid()
 
   const response = await fetch(url)
   const data = await response.bytes()
+  const tree = await loadBoardData(data, ext)
 
-  return await processBoardData(data, ext)
+  return processImportedBoard(id, tree)
 }
 
 export const importPrefsFile = async (): Promise<unknown> => {
