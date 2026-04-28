@@ -8,12 +8,12 @@ import { generateNewPage } from "@/app/utils/boards"
 import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
 import { handleError } from "@/app/utils/error"
 import {
-  deleteBoardPage,
   loadManifest,
   loadPage,
   saveBoardPage,
-  saveManifest,
+  saveManifest
 } from "@/app/utils/file"
+import { removePath } from "@/app/utils/io"
 import { useTheme } from "@/app/utils/theme"
 import { BoardButton, BoardPage, TileImage } from "@/app/utils/types"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
@@ -90,13 +90,16 @@ export default function PageRoute() {
   }
 
   const deletePage = async () => {
-    if (!currentPageId)
-      return handleError("Could not delete page - ID undefined")
-    try {
-      await deleteBoardPage(id, currentPageId)
-    } catch (e) {
-      handleError(e)
-    }
+    const path = pages.find((p) => p.id === currentPageId)?.path
+    if (!path) return handleError("Could not delete page - no path found")
+    const manifest = await loadManifest(boardId as string)
+    if (!manifest.paths?.boards) return handleError("Could not load manifest")
+    delete manifest.paths.boards[currentPageId]
+    saveManifest(boardId as string, manifest)
+    updateBoard(boardId as string, {
+      pages: pages.filter((p) => p.id !== currentPageId),
+    })
+    await removePath(`${boardId}/${path}`)
     navigateHome()
   }
 

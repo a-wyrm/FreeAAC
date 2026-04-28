@@ -280,19 +280,6 @@ export const deleteBoard = async (id: string) => {
   await removePath(id, { recursive: true })
 }
 
-export const deleteBoardPage = async (boardId: string, pageId: string) => {
-  const manifest = await loadManifest(boardId)
-  if (!manifest.paths?.boards) throw new Error("Could not load manifest")
-  if (!(pageId in manifest.paths.boards))
-    throw new Error("Could not find page to delete")
-
-  console.log(`Deleting page ${pageId} in board ${boardId}`)
-  delete manifest.paths.boards[pageId]
-  saveManifest(boardId, manifest)
-  console.log(`${boardId}/${pageId}`)
-  await removePath(`${boardId}/${pageId}`)
-}
-
 export const exportBoard = async (id: string, name: string, ext: string) => {
   const fileName = `${id}.${ext}`
   const tree = await loadBoard(id)
