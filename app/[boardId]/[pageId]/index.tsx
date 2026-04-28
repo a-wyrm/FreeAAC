@@ -11,7 +11,7 @@ import {
   loadManifest,
   loadPage,
   saveBoardPage,
-  saveManifest
+  saveManifest,
 } from "@/app/utils/file"
 import { removePath } from "@/app/utils/io"
 import { useTheme } from "@/app/utils/theme"
@@ -143,7 +143,14 @@ export default function PageRoute() {
     const path = `${page.id}.obf`
     updateBoard(id, {
       ...board,
-      pages: [...pages, { ...page, path }],
+      pages: [
+        ...pages,
+        {
+          id: page.id,
+          name: page.name,
+          path,
+        },
+      ],
     })
     await saveBoardPage(id, page.id, page, path)
     push(`/${boardId}/${page.id}`)
