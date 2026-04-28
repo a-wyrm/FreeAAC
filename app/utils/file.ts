@@ -126,10 +126,8 @@ type ProcessedBoard = {
   rootPage: string
 }
 
-const processImportedBoard = async (
-  id: string,
-  tree: AACTree,
-): Promise<ProcessedBoard> => {
+const processImportedBoard = async (tree: AACTree): Promise<ProcessedBoard> => {
+  const id = uuid()
   await saveBoard(id, tree)
 
   const manifest = await loadManifest(id)
@@ -160,24 +158,18 @@ export const importBoardFile = async (): Promise<ProcessedBoard> => {
   const file = getFileFromDocument(asset)
   const data = await file.bytes()
   const ext = getFileExt(asset.name)
-  const id = uuid()
-  const fileName = `${id}.${ext}`
+  const tree = await loadBoard(data, ext)
 
-  await saveFile(fileName, data)
-  const tree = await loadBoard(fileName)
-
-  return processImportedBoard(id, tree)
+  return processImportedBoard(tree)
 }
 
 export const importBoard = async (url: string): Promise<ProcessedBoard> => {
   const ext = getFileExt(url.split("/").slice(-1)[0])
-  const id = uuid()
-
   const response = await fetch(url)
   const data = await response.bytes()
-  const tree = await loadBoardData(data, ext)
+  const tree = await loadBoard(data, ext)
 
-  return processImportedBoard(id, tree)
+  return processImportedBoard(tree)
 }
 
 export const importPrefsFile = async (): Promise<unknown> => {
@@ -252,18 +244,12 @@ export const loadPage = async (
   return tree.pages[pageId] as BoardPage
 }
 
-export const loadBoardData = async (
-  data: Uint8Array,
-  ext: string,
+export const loadBoard = async (
+  input: string | Uint8Array,
+  ext = "obf",
 ): Promise<BoardTree> => {
   const processor = getProcessor(`.${ext}`, { fileAdapter })
-  const tree = await processor.loadIntoTree(data)
-  return tree
-}
-
-export const loadBoard = async (id: string): Promise<BoardTree> => {
-  const processor = new ObfProcessor({ fileAdapter })
-  const tree = await processor.loadIntoTree(id)
+  const tree = await processor.loadIntoTree(input)
   return tree
 }
 
