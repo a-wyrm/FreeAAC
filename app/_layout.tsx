@@ -77,6 +77,7 @@ export default function RootLayout() {
             <GestureHandlerRootView>
               <Stack
                 screenOptions={{
+                  animation: "none",
                   headerBackButtonDisplayMode: "minimal",
                 }}
               >
