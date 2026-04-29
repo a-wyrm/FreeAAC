@@ -35,7 +35,12 @@ export default function DialogRename({
     onCancel()
   }
   return (
-    <Modal visible={visible} onRequestClose={cancel} transparent>
+    <Modal
+      visible={visible}
+      onRequestClose={cancel}
+      transparent
+      animationType="fade"
+    >
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
         <View
           style={{ ...styles.modal, backgroundColor: theme.surfaceContainer }}
