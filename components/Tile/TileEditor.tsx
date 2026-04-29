@@ -7,12 +7,12 @@ import { usePagesetActions } from "../../stores/boards"
 import { handleError } from "../../utils/error"
 import { selectImage } from "../../utils/file"
 import {
-    FONT_SIZE,
-    GAP,
-    ICON_SIZE,
-    PADDING,
-    RADIUS,
-    useTheme,
+  FONT_SIZE,
+  GAP,
+  ICON_SIZE,
+  PADDING,
+  RADIUS,
+  useTheme,
 } from "../../utils/theme"
 import { BoardButton, TileImage } from "../../utils/types"
 import { Text } from "../Styled"
@@ -36,6 +36,23 @@ const TabSelector = ({
       <Pressable
         style={{
           ...styles.tabButton,
+          borderBottomColor: tab === "symbol" ? theme.onSurface : theme.outline,
+          borderBottomWidth: tab === "symbol" ? 2 : 1,
+        }}
+        onPress={() => setTab("symbol")}
+      >
+        <Text
+          style={{
+            ...styles.tabButtonText,
+            color: tab === "symbol" ? theme.onSurface : theme.outline,
+          }}
+        >
+          Symbol
+        </Text>
+      </Pressable>
+      <Pressable
+        style={{
+          ...styles.tabButton,
           borderBottomColor:
             tab === "settings" ? theme.onSurface : theme.outline,
           borderBottomWidth: tab === "settings" ? 2 : 1,
@@ -49,23 +66,6 @@ const TabSelector = ({
           }}
         >
           Settings
-        </Text>
-      </Pressable>
-      <Pressable
-        style={{
-          ...styles.tabButton,
-          borderBottomColor: tab === "symbol" ? theme.onSurface : theme.outline,
-          borderBottomWidth: tab === "symbol" ? 2 : 1,
-        }}
-        onPress={() => setTab("symbol")}
-      >
-        <Text
-          style={{
-            ...styles.tabButtonText,
-            color: tab === "symbol" ? theme.onSurface : theme.outline,
-          }}
-        >
-          Symbol
         </Text>
       </Pressable>
     </View>
@@ -98,7 +98,7 @@ export default function TileEditor({
         index: tile.index,
       })
   }
-  const [tab, setTab] = useState<Tab>("settings")
+  const [tab, setTab] = useState<Tab>("symbol")
 
   const deleteTile = () => {
     setButton(undefined, undefined)
