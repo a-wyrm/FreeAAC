@@ -113,7 +113,7 @@ export default function RootLayout() {
                   />
                   <Stack.Screen
                     name="[boardId]/[pageId]/index"
-                    options={{ animation: "none", headerShown: false }}
+                    options={{ animation: "simple_push", headerShown: false }}
                   />
                   <Stack.Screen
                     name="settings"
