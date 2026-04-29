@@ -1,5 +1,5 @@
-import { handleError } from "@/app/utils/error"
-import { importBoard } from "@/app/utils/file"
+import { handleError } from "@/utils/error"
+import { importBoard } from "@/utils/file"
 import { useAssets } from "expo-asset"
 import { Image } from "expo-image"
 import { Link, useRouter } from "expo-router"
@@ -95,12 +95,9 @@ export default function BoardCard({ board }: { board: BoardTemplate }) {
 
 const styles = StyleSheet.create({
   card: {
-    display: "flex",
-    justifyContent: "flex-end",
     width: MAX_WIDTH / 2 - GAP.xl * 2,
     maxWidth: "90%",
     borderRadius: RADIUS.xl,
     overflow: "hidden",
-    marginHorizontal: "auto",
   },
 })

@@ -1,6 +1,8 @@
 import { AACSemanticIntent } from "@willwade/aac-processors/browser"
 import { nanoid } from "nanoid/non-secure"
+import { PageItem } from "../stores/boards"
 import { BoardButton, BoardPage, BoardTree } from "./types"
+import { uuid } from "./uuid"
 
 export const getHomePageId = (tree: BoardTree): string => {
   const defaultPageId =
@@ -33,7 +35,7 @@ export const generateNewPage = (
     .fill(null)
     .map(() => Array(cols).fill(undefined))
   return {
-    id: nanoid(),
+    id: uuid(),
     name,
     grid,
     parentId,
@@ -48,7 +50,7 @@ export const generateNewBoard = (
   cols: number,
 ): {
   tree: BoardTree
-  pages: Record<string, { name: string; path: string }>
+  pages: PageItem[]
 } => {
   const page = generateNewPage(rows, cols, null)
   const tree: BoardTree = {
@@ -64,11 +66,12 @@ export const generateNewBoard = (
   }
   return {
     tree,
-    pages: {
-      [page.id]: {
+    pages: [
+      {
+        id: page.id,
         name: page.name,
         path: `${page.id}.obf`,
       },
-    },
+    ],
   }
 }

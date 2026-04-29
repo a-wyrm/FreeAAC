@@ -2,7 +2,7 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet"
 import { Check } from "lucide-react-native"
 import { useState } from "react"
 import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native"
-import { EditTile } from "../../[boardId]"
+import { EditTile } from "../../app/[boardId]"
 import { usePagesetActions } from "../../stores/boards"
 import { handleError } from "../../utils/error"
 import { selectImage } from "../../utils/file"
@@ -36,6 +36,23 @@ const TabSelector = ({
       <Pressable
         style={{
           ...styles.tabButton,
+          borderBottomColor: tab === "symbol" ? theme.onSurface : theme.outline,
+          borderBottomWidth: tab === "symbol" ? 2 : 1,
+        }}
+        onPress={() => setTab("symbol")}
+      >
+        <Text
+          style={{
+            ...styles.tabButtonText,
+            color: tab === "symbol" ? theme.onSurface : theme.outline,
+          }}
+        >
+          Symbol
+        </Text>
+      </Pressable>
+      <Pressable
+        style={{
+          ...styles.tabButton,
           borderBottomColor:
             tab === "settings" ? theme.onSurface : theme.outline,
           borderBottomWidth: tab === "settings" ? 2 : 1,
@@ -51,23 +68,6 @@ const TabSelector = ({
           Settings
         </Text>
       </Pressable>
-      <Pressable
-        style={{
-          ...styles.tabButton,
-          borderBottomColor: tab === "symbol" ? theme.onSurface : theme.outline,
-          borderBottomWidth: tab === "symbol" ? 2 : 1,
-        }}
-        onPress={() => setTab("symbol")}
-      >
-        <Text
-          style={{
-            ...styles.tabButtonText,
-            color: tab === "symbol" ? theme.onSurface : theme.outline,
-          }}
-        >
-          Symbol
-        </Text>
-      </Pressable>
     </View>
   )
 }
@@ -77,13 +77,11 @@ export default function TileEditor({
   tile,
   setTile,
   onClose,
-  pages,
 }: {
   ref: React.RefObject<TrueSheet | null>
   tile: EditTile | undefined
   setTile: (tile: EditTile) => void
   onClose: () => void
-  pages: { id: string; name: string }[]
 }) {
   const theme = useTheme()
   const { setSymbolSearchText } = usePagesetActions()
@@ -100,7 +98,7 @@ export default function TileEditor({
         index: tile.index,
       })
   }
-  const [tab, setTab] = useState<Tab>("settings")
+  const [tab, setTab] = useState<Tab>("symbol")
 
   const deleteTile = () => {
     setButton(undefined, undefined)
@@ -177,7 +175,6 @@ export default function TileEditor({
             <TileSettings
               button={button}
               setButton={(newButton) => setButton(newButton, image)}
-              pages={pages}
               deleteTile={deleteTile}
             />
           )}

@@ -14,6 +14,7 @@ import {
 } from "expo-image-picker"
 import { fetch } from "expo/fetch"
 import { nanoid } from "nanoid/non-secure"
+import { PageItem } from "../stores/boards"
 import { appName } from "./consts"
 import {
   getFileFromDocument,
@@ -41,6 +42,8 @@ type ObfManifest = {
     sounds?: { [key: string]: string }
   }
 }
+
+const cachedPages: Record<string, BoardPage> = {}
 
 const fileAdapter = {
   readBinaryFromInput: async (
@@ -122,7 +125,7 @@ export const getFileType = (ext: string): { mimeType: string; UTI: string } => {
 type ProcessedBoard = {
   id: string
   name: string
-  pages: Record<string, { name: string; path: string }>
+  pages: PageItem[]
   rootPage: string
 }
 
@@ -131,29 +134,31 @@ const processImportedBoard = async (tree: AACTree): Promise<ProcessedBoard> => {
   await saveBoard(id, tree)
 
   const manifest = await loadManifest(id)
-
-  if (!manifest.paths?.boards) throw new Error("No boards in manifest")
   if (!manifest.root) throw new Error("No root page in manifest")
-
-  const pages: Record<string, { name: string; path: string }> = {}
-
-  for (const [pageId, page] of Object.entries<BoardPage>(tree.pages)) {
-    pages[pageId] = { name: page.name, path: manifest.paths.boards[pageId] }
-  }
-
-  const rootPage = manifest.root
   const name = tree.metadata?.name ?? "Untitled board"
+  const rootPage = manifest.root
+
+  const pages = Object.entries<BoardPage>(tree.pages).map(([id, page]) => {
+    if (!manifest.paths?.boards) throw new Error("No boards in manifest")
+    return {
+      id,
+      name: page.name,
+      path: manifest.paths.boards[id],
+    }
+  })
 
   return { id, name, pages, rootPage }
 }
 
-export const importBoardFile = async (): Promise<ProcessedBoard> => {
+export const importBoardFile = async (): Promise<
+  ProcessedBoard | undefined
+> => {
   const result = await DocumentPicker.getDocumentAsync({
     copyToCacheDirectory: true,
   })
 
   const asset = result.assets?.at(0)
-  if (!asset) throw "No file selected"
+  if (!asset) return undefined
 
   const file = getFileFromDocument(asset)
   const data = await file.bytes()
@@ -236,11 +241,13 @@ export const saveRootPageId = async (boardId: string, pageId: string) => {
 export const loadPage = async (
   boardId: string,
   pageId: string,
-  pages: Record<string, { path: string }>,
+  path: string,
 ): Promise<BoardPage> => {
-  const path = pages[pageId].path
+  const cacheName = `${boardId}/${pageId}`
+  if (cacheName in cachedPages) return cachedPages[cacheName]
   const processor = new ObfProcessor({ fileAdapter })
   const tree = await processor.loadIntoTree(`${boardId}/${path}`)
+  cachedPages[cacheName] = tree.pages[pageId]
   return tree.pages[pageId] as BoardPage
 }
 
@@ -265,6 +272,8 @@ export const saveBoardPage = async (
   page: BoardPage,
   path: string,
 ) => {
+  const cacheName = `${boardId}/${pageId}`
+  delete cachedPages[cacheName]
   const tree = {
     metadata: {},
     pages: {
@@ -276,19 +285,6 @@ export const saveBoardPage = async (
 
 export const deleteBoard = async (id: string) => {
   await removePath(id, { recursive: true })
-}
-
-export const deleteBoardPage = async (boardId: string, pageId: string) => {
-  const manifest = await loadManifest(boardId)
-  if (!manifest.paths?.boards) throw new Error("Could not load manifest")
-  if (!(pageId in manifest.paths.boards))
-    throw new Error("Could not find page to delete")
-
-  console.log(`Deleting page ${pageId} in board ${boardId}`)
-  delete manifest.paths.boards[pageId]
-  saveManifest(boardId, manifest)
-  console.log(`${boardId}/${pageId}`)
-  await removePath(`${boardId}/${pageId}`)
 }
 
 export const exportBoard = async (id: string, name: string, ext: string) => {

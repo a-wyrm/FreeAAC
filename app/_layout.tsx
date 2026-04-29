@@ -7,12 +7,13 @@ import Head from "expo-router/head"
 import { useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import AudioController from "./components/AudioController"
-import SettingsButton from "./components/Settings/Button"
-import { useDefaultBoardId } from "./stores/prefs"
-import { useColorScheme } from "./utils/colorScheme"
-import { appDescription, appName } from "./utils/consts"
-import { ICON_SIZE, ThemeContext, themes } from "./utils/theme"
+import { SafeAreaView } from "react-native-safe-area-context"
+import AudioController from "../components/AudioController"
+import SettingsButton from "../components/Settings/Button"
+import { useDefaultBoardId } from "../stores/prefs"
+import { useColorScheme } from "../utils/colorScheme"
+import { appDescription, appName } from "../utils/consts"
+import { ICON_SIZE, ThemeContext, themes } from "../utils/theme"
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -75,65 +76,83 @@ export default function RootLayout() {
         <ThemeContext value={theme}>
           <TrueSheetProvider>
             <GestureHandlerRootView>
-              <Stack
-                screenOptions={{
-                  headerBackButtonDisplayMode: "minimal",
-                }}
+              <SafeAreaView
+                style={{ flex: 1, backgroundColor: theme.background }}
               >
-                <Stack.Screen
-                  name="index"
-                  options={{
-                    headerStyle: styles.header,
-                    headerTintColor: theme.onSurface,
-                    headerTitle: "FreeAAC",
-                    headerLeft: () => (
-                      <View style={styles.headerLeft}>
-                        <Image
-                          source={assets?.at(0)}
-                          style={{ width: ICON_SIZE.xl, height: ICON_SIZE.xl }}
-                        />
-                      </View>
-                    ),
-                    headerRight: () => (
-                      <View style={styles.headerRight}>
-                        <SettingsButton />
-                      </View>
-                    ),
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: "simple_push",
+                    headerBackButtonDisplayMode: "minimal",
                   }}
-                />
-                <Stack.Screen
-                  name="settings"
-                  options={{
-                    headerTitle: "Settings",
-                    headerStyle: styles.header,
-                    headerTintColor: theme.onSurface,
-                  }}
-                />
-                <Stack.Screen
-                  name="templates"
-                  options={{
-                    headerTitle: "Templates",
-                    headerStyle: styles.header,
-                    headerTintColor: theme.onSurface,
-                  }}
-                />
-                <Stack.Screen
-                  name="privacy"
-                  options={{
-                    headerTitle: "Privacy policy",
-                    headerStyle: styles.header,
-                    headerTintColor: theme.onSurface,
-                  }}
-                />
-                <Stack.Screen
-                  name="create"
-                  options={{
-                    headerTitle: "Create board",
-                    headerStyle: styles.header,
-                    headerTintColor: theme.onSurface,
-                  }}
-                />
-              </Stack>
+                >
+                  <Stack.Screen
+                    name="index"
+                    options={{
+                      headerShown: true,
+                      headerStyle: styles.header,
+                      headerTintColor: theme.onSurface,
+                      headerTitle: "FreeAAC",
+                      headerLeft: () => (
+                        <View style={styles.headerLeft}>
+                          <Image
+                            source={assets?.at(0)}
+                            style={{
+                              width: ICON_SIZE.xl,
+                              height: ICON_SIZE.xl,
+                            }}
+                          />
+                        </View>
+                      ),
+                      headerRight: () => (
+                        <View style={styles.headerRight}>
+                          <SettingsButton />
+                        </View>
+                      ),
+                    }}
+                  />
+                  <Stack.Screen
+                    name="[boardId]/[pageId]/index"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings"
+                    options={{
+                      headerShown: true,
+                      headerTitle: "Settings",
+                      headerStyle: styles.header,
+                      headerTintColor: theme.onSurface,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="templates"
+                    options={{
+                      headerShown: true,
+                      headerTitle: "Templates",
+                      headerStyle: styles.header,
+                      headerTintColor: theme.onSurface,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="privacy"
+                    options={{
+                      headerShown: true,
+                      headerTitle: "Privacy policy",
+                      headerStyle: styles.header,
+                      headerTintColor: theme.onSurface,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="create"
+                    options={{
+                      headerShown: true,
+                      headerTitle: "Create board",
+                      headerStyle: styles.header,
+                      headerTintColor: theme.onSurface,
+                    }}
+                  />
+                </Stack>
+              </SafeAreaView>
             </GestureHandlerRootView>
           </TrueSheetProvider>
         </ThemeContext>

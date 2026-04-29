@@ -1,26 +1,25 @@
-import MessageWindow from "@/app/components/MessageWindow"
-import Page from "@/app/components/Page/Page"
-import PageAddSheet from "@/app/components/Page/PageAddSheet"
-import PageNav from "@/app/components/Page/PageNav"
-import { useBoards, usePagesetActions } from "@/app/stores/boards"
-import { useDebounceTime, useMessageWindowLocation } from "@/app/stores/prefs"
-import { generateNewPage } from "@/app/utils/boards"
-import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
-import { handleError } from "@/app/utils/error"
+import MessageWindow from "@/components/MessageWindow"
+import Page from "@/components/Page/Page"
+import PageAddSheet from "@/components/Page/PageAddSheet"
+import PageNav from "@/components/Page/PageNav"
+import { useBoards, usePagesetActions } from "@/stores/boards"
+import { useDebounceTime, useMessageWindowLocation } from "@/stores/prefs"
+import { generateNewPage } from "@/utils/boards"
+import { DebounceContext, handleDebounce } from "@/utils/debounce"
+import { handleError } from "@/utils/error"
 import {
-  deleteBoardPage,
   loadManifest,
   loadPage,
   saveBoardPage,
   saveManifest,
-} from "@/app/utils/file"
-import { useTheme } from "@/app/utils/theme"
-import { BoardButton, BoardPage, TileImage } from "@/app/utils/types"
+} from "@/utils/file"
+import { removePath } from "@/utils/io"
+import { useTheme } from "@/utils/theme"
+import { BoardButton, BoardPage, TileImage } from "@/utils/types"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
-import { Stack, useLocalSearchParams, useRouter } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 
 export type EditTile = {
   button: BoardButton | undefined
@@ -41,30 +40,26 @@ export default function PageRoute() {
   const pageNavSheet = useRef<TrueSheet>(null)
   const pageAddSheet = useRef<TrueSheet>(null)
   const [page, setPage] = useState<BoardPage>()
-  const pages =
-    board?.pages ?
-      Object.entries(board.pages).map(([id, page]) => {
-        return { ...page, id }
-      })
-    : []
+  const pages = board?.pages ?? []
   const [rootPageState, setRootPageState] = useState<string | undefined>(
     board?.rootPage,
   )
-  const { push, replace, back } = useRouter()
+  const { push, dismissTo, back } = useRouter()
   const { updateBoard } = usePagesetActions()
+  const path = pages.find((p) => p.id === pageId)?.path
 
   // Load page from .obf file
   useEffect(() => {
     ;(async () => {
       try {
-        if (!currentPageId || !board?.pages) return
-        const pageObject = await loadPage(id, currentPageId, board.pages)
+        if (!currentPageId || !path) return
+        const pageObject = await loadPage(id, currentPageId, path)
         setPage(pageObject)
       } catch (e) {
         handleError(e)
       }
     })()
-  }, [currentPageId, id, board])
+  }, [currentPageId, id, path])
 
   // Load root page from manifest if unknown
   useEffect(() => {
@@ -82,27 +77,29 @@ export default function PageRoute() {
   }, [boards, id, rootPageState, updateBoard])
 
   const savePage = async (page: BoardPage) => {
-    if (!board?.pages)
-      return handleError("Could not save page - board undefined")
     if (!currentPageId) return handleError("Could not save page - ID undefined")
     console.log("Saving page", page)
     setPage(page)
-    const path = board.pages[page.id].path
+    const path = pages.find((p) => p.id === page.id)?.path
+    if (!path) return handleError("Could not save page - no path found")
     await saveBoardPage(id, currentPageId, page, path)
   }
 
   const navigateHome = () => {
-    if (rootPageState) replace(`/${boardId}/${rootPageState}`)
+    if (rootPageState) dismissTo(`/${boardId}/${rootPageState}`)
   }
 
   const deletePage = async () => {
-    if (!currentPageId)
-      return handleError("Could not delete page - ID undefined")
-    try {
-      await deleteBoardPage(id, currentPageId)
-    } catch (e) {
-      handleError(e)
-    }
+    const path = pages.find((p) => p.id === currentPageId)?.path
+    if (!path) return handleError("Could not delete page - no path found")
+    const manifest = await loadManifest(boardId as string)
+    if (!manifest.paths?.boards) return handleError("Could not load manifest")
+    delete manifest.paths.boards[currentPageId]
+    saveManifest(boardId as string, manifest)
+    updateBoard(boardId as string, {
+      pages: pages.filter((p) => p.id !== currentPageId),
+    })
+    await removePath(`${boardId}/${path}`)
     navigateHome()
   }
 
@@ -140,15 +137,20 @@ export default function PageRoute() {
   )
 
   const addPage = async (name: string, rows: number, cols: number) => {
-    if (!board?.pages)
-      return handleError("Could not add page - board undefined")
     if (!currentPageId)
       return handleError("Could not add page - current page not found")
     const page = generateNewPage(rows, cols, currentPageId, name)
     const path = `${page.id}.obf`
     updateBoard(id, {
       ...board,
-      pages: { ...board.pages, [page.id]: { name: page.name, path } },
+      pages: [
+        ...pages,
+        {
+          id: page.id,
+          name: page.name,
+          path,
+        },
+      ],
     })
     await saveBoardPage(id, page.id, page, path)
     push(`/${boardId}/${page.id}`)
@@ -157,32 +159,27 @@ export default function PageRoute() {
 
   return (
     <DebounceContext value={debounce}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-        {messageWindowLocation === "top" && messageWindow}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {page && (
-            <Page
-              page={page}
-              savePage={savePage}
-              homePageId={rootPageState}
-              pages={pages}
-              navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
-            />
-          )}
-          {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
-        </View>
-        {messageWindowLocation === "bottom" && messageWindow}
-      </SafeAreaView>
+      {messageWindowLocation === "top" && messageWindow}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {page && (
+          <Page
+            page={page}
+            savePage={savePage}
+            homePageId={rootPageState}
+            navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
+          />
+        )}
+        {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
+      </View>
+      {messageWindowLocation === "bottom" && messageWindow}
       <PageNav
         ref={pageNavSheet}
-        pages={pages}
         navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
       />
       <PageAddSheet ref={pageAddSheet} onAdd={addPage} />
