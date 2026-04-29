@@ -2,7 +2,7 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet"
 import { useRouter } from "expo-router"
 import { Ellipsis } from "lucide-react-native"
 import { useRef, useState } from "react"
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native"
+import { ActivityIndicator, StyleSheet, View } from "react-native"
 import { useBoards, useBoardsLoaded } from "../../stores/boards"
 import { FONT_SIZE, GAP, ICON_SIZE, useTheme } from "../../utils/theme"
 import { Button, Text } from "../Styled"
@@ -16,43 +16,36 @@ export default function BoardList() {
   const router = useRouter()
   const [selectedBoardId, setSelectedBoardId] = useState<string>()
   return (
-    <>
-      {boardsLoaded && boards.length > 0 && (
-        <FlatList
-          contentContainerStyle={{ gap: GAP.xs }}
-          data={boards}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.container}>
-              <Button
-                variant="ghost"
-                style={{ justifyContent: "flex-start", flex: 1 }}
-                onPress={() => {
-                  router.push({
-                    pathname: "/[boardId]",
-                    params: { boardId: item.id },
-                  })
-                }}
-              >
-                <Text
-                  style={{ color: theme.onSurface, fontSize: FONT_SIZE.lg }}
-                >
-                  {item.name}
-                </Text>
-              </Button>
-              <Button
-                variant="ghost"
-                onPress={() => {
-                  setSelectedBoardId(item.id)
-                  sheetRef.current?.present()
-                }}
-              >
-                <Ellipsis size={ICON_SIZE.md} color={theme.outline} />
-              </Button>
-            </View>
-          )}
-        />
-      )}
+    <View style={{ gap: GAP.md }}>
+      {boardsLoaded &&
+        boards.length > 0 &&
+        boards.map((item) => (
+          <View style={styles.container} key={item.id}>
+            <Button
+              variant="ghost"
+              style={{ justifyContent: "flex-start", flex: 1 }}
+              onPress={() => {
+                router.push({
+                  pathname: "/[boardId]",
+                  params: { boardId: item.id },
+                })
+              }}
+            >
+              <Text style={{ color: theme.onSurface, fontSize: FONT_SIZE.lg }}>
+                {item.name}
+              </Text>
+            </Button>
+            <Button
+              variant="ghost"
+              onPress={() => {
+                setSelectedBoardId(item.id)
+                sheetRef.current?.present()
+              }}
+            >
+              <Ellipsis size={ICON_SIZE.md} color={theme.outline} />
+            </Button>
+          </View>
+        ))}
       {boardsLoaded && boards.length === 0 && (
         <Text style={{ textAlign: "center" }}>No boards found</Text>
       )}
@@ -60,7 +53,7 @@ export default function BoardList() {
         <ActivityIndicator size="large" color={theme.outline} />
       )}
       <BoardOptions ref={sheetRef} boardId={selectedBoardId} />
-    </>
+    </View>
   )
 }
 

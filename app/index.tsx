@@ -6,7 +6,7 @@ import {
 } from "lucide-react-native"
 import { useTransition } from "react"
 import { ActivityIndicator, StyleSheet, View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { ScrollView } from "react-native-gesture-handler"
 import BoardList from "../components/Board/BoardList"
 import { Button, Text } from "../components/Styled"
 import { usePagesetActions } from "../stores/boards"
@@ -24,7 +24,6 @@ import {
 
 export default function Index() {
   const theme = useTheme()
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const { addBoard } = usePagesetActions()
   const [loading, startLoading] = useTransition()
@@ -43,73 +42,52 @@ export default function Index() {
   }
 
   return (
-    <>
-      <View
-        style={{
-          ...styles.container,
-          backgroundColor: theme.background,
-          paddingBottom: insets.bottom,
-        }}
-      >
-        <View style={{ ...styles.boardList, backgroundColor: theme.surface }}>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-            }}
-          >
-            <Text
-              style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semi }}
-            >
-              My boards
-            </Text>
-            <View style={{ display: "flex", flexDirection: "row" }}>
-              <Link href="/create" asChild>
-                <Button variant="ghost">
-                  <FilePlusCorner size={ICON_SIZE.md} color={theme.onSurface} />
-                </Button>
-              </Link>
-              <Button variant="ghost" onPress={openFile}>
-                <SquareArrowRightEnter
-                  size={ICON_SIZE.md}
-                  color={theme.onSurface}
-                />
-              </Button>
-            </View>
-          </View>
-          <BoardList />
-          {loading && (
-            <ActivityIndicator size="large" color={theme.onSurface} />
-          )}
-          {!loading && (
-            <>
-              <Button
-                variant="outline"
-                onPress={() => router.push("/templates")}
-              >
-                <PackageOpen size={ICON_SIZE.md} color={theme.onSurface} />
-                <Text style={{ color: theme.onSurface }}>View templates</Text>
-              </Button>
-            </>
-          )}
+    <View style={{ ...styles.container }}>
+      <ScrollView>
+        <Text
+          style={{
+            fontSize: FONT_SIZE.md,
+            fontWeight: FONT_WEIGHT.semi,
+            paddingBottom: PADDING.xl,
+          }}
+        >
+          My boards
+        </Text>
+        <BoardList />
+        {loading && <ActivityIndicator size="large" color={theme.onSurface} />}
+      </ScrollView>
+      {!loading && (
+        <View style={{ gap: GAP.md }}>
+          <Button variant="outline" onPress={() => router.push("/templates")}>
+            <PackageOpen size={ICON_SIZE.md} color={theme.onSurface} />
+            <Text style={{ color: theme.onSurface }}>View templates</Text>
+          </Button>
+          <Link href="/create" asChild>
+            <Button variant="outline">
+              <FilePlusCorner size={ICON_SIZE.md} color={theme.onSurface} />
+              <Text>Create board</Text>
+            </Button>
+          </Link>
+          <Button variant="outline" onPress={openFile}>
+            <SquareArrowRightEnter
+              size={ICON_SIZE.md}
+              color={theme.onSurface}
+            />
+            <Text>Import board</Text>
+          </Button>
         </View>
-      </View>
-    </>
+      )}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
-  boardList: {
-    width: MAX_WIDTH,
-    maxWidth: "100%",
+    justifyContent: "space-between",
+    marginHorizontal: "auto",
+    width: "100%",
+    maxWidth: MAX_WIDTH,
     padding: PADDING.xl,
-    gap: GAP.xl,
   },
 })
