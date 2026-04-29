@@ -7,11 +7,11 @@ import {
 import { useTransition } from "react"
 import { ActivityIndicator, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import BoardList from "./components/Board/BoardList"
-import { Button, Text } from "./components/Styled"
-import { usePagesetActions } from "./stores/boards"
-import { handleError } from "./utils/error"
-import { importBoardFile } from "./utils/file"
+import BoardList from "../components/Board/BoardList"
+import { Button, Text } from "../components/Styled"
+import { usePagesetActions } from "../stores/boards"
+import { handleError } from "../utils/error"
+import { importBoardFile } from "../utils/file"
 import {
   FONT_SIZE,
   FONT_WEIGHT,
@@ -20,7 +20,7 @@ import {
   MAX_WIDTH,
   PADDING,
   useTheme,
-} from "./utils/theme"
+} from "../utils/theme"
 
 export default function Index() {
   const theme = useTheme()
@@ -32,9 +32,10 @@ export default function Index() {
   const openFile = async () => {
     try {
       startLoading(async () => {
-        const { id, name } = await importBoardFile()
-        addBoard({ id, name })
-        router.push({ pathname: "/[board]", params: { board: id } })
+        const board = await importBoardFile()
+        if (!board) return
+        addBoard(board)
+        router.push({ pathname: "/[boardId]", params: { boardId: board.id } })
       })
     } catch (e) {
       handleError(e)

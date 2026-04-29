@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router"
 import { ScrollView, StyleSheet, View } from "react-native"
-import PageAdd from "./components/Page/PageAdd"
-import { usePagesetActions } from "./stores/boards"
-import { generateNewBoard } from "./utils/boards"
-import { saveBoard } from "./utils/file"
-import { GAP, MAX_WIDTH, PADDING, useTheme } from "./utils/theme"
-import { uuid } from "./utils/uuid"
+import PageAdd from "../components/Page/PageAdd"
+import { usePagesetActions } from "../stores/boards"
+import { generateNewBoard } from "../utils/boards"
+import { saveBoard } from "../utils/file"
+import { GAP, MAX_WIDTH, PADDING, useTheme } from "../utils/theme"
+import { uuid } from "../utils/uuid"
 
 export default function Create() {
   const theme = useTheme()
@@ -14,9 +14,9 @@ export default function Create() {
 
   const createBoard = async (name: string, rows: number, cols: number) => {
     const id = uuid()
-    const tree = generateNewBoard(rows, cols)
+    const { tree, pages } = generateNewBoard(rows, cols)
     await saveBoard(id, tree)
-    addBoard({ id, name })
+    addBoard({ id, name, pages })
     toggleEditMode()
     replace(`/${id}`)
   }
