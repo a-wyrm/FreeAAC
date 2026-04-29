@@ -17,10 +17,9 @@ import { removePath } from "@/utils/io"
 import { useTheme } from "@/utils/theme"
 import { BoardButton, BoardPage, TileImage } from "@/utils/types"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
-import { Stack, useLocalSearchParams, useRouter } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 
 export type EditTile = {
   button: BoardButton | undefined
@@ -160,28 +159,25 @@ export default function PageRoute() {
 
   return (
     <DebounceContext value={debounce}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-        {messageWindowLocation === "top" && messageWindow}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {page && (
-            <Page
-              page={page}
-              savePage={savePage}
-              homePageId={rootPageState}
-              navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
-            />
-          )}
-          {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
-        </View>
-        {messageWindowLocation === "bottom" && messageWindow}
-      </SafeAreaView>
+      {messageWindowLocation === "top" && messageWindow}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {page && (
+          <Page
+            page={page}
+            savePage={savePage}
+            homePageId={rootPageState}
+            navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
+          />
+        )}
+        {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
+      </View>
+      {messageWindowLocation === "bottom" && messageWindow}
       <PageNav
         ref={pageNavSheet}
         navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
