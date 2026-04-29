@@ -7,7 +7,6 @@ import {
   CopyCheck,
   Delete,
   EllipsisVertical,
-  Forward,
   Home,
   LibraryBig,
   Plus,
@@ -86,7 +85,7 @@ export default function MessageWindow({
     logEvent,
   } = usePagesetActions()
   const speak = useSpeak()
-  const { replace } = useRouter()
+  const { dismissTo } = useRouter()
   const isRootPage = rootPage !== undefined && rootPage === pageId
 
   const hasMessage = messageButtons.length > 0
@@ -118,7 +117,7 @@ export default function MessageWindow({
 
   const navigateMenu = () => {
     clearMessageButtons()
-    replace("/")
+    dismissTo("/")
   }
 
   return (
@@ -164,9 +163,6 @@ export default function MessageWindow({
                   fill={theme.outline}
                   fillOpacity={isRootPage ? 1 : 0}
                 />
-              </Button>
-              <Button variant="ghost" onPress={openPageNav}>
-                <Forward size={ICON_SIZE.xl} color={theme.onSurface} />
               </Button>
             </>
           )}

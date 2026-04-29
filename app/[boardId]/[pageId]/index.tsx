@@ -1,26 +1,25 @@
-import MessageWindow from "@/app/components/MessageWindow"
-import Page from "@/app/components/Page/Page"
-import PageAddSheet from "@/app/components/Page/PageAddSheet"
-import PageNav from "@/app/components/Page/PageNav"
-import { useBoards, usePagesetActions } from "@/app/stores/boards"
-import { useDebounceTime, useMessageWindowLocation } from "@/app/stores/prefs"
-import { generateNewPage } from "@/app/utils/boards"
-import { DebounceContext, handleDebounce } from "@/app/utils/debounce"
-import { handleError } from "@/app/utils/error"
+import MessageWindow from "@/components/MessageWindow"
+import Page from "@/components/Page/Page"
+import PageAddSheet from "@/components/Page/PageAddSheet"
+import PageNav from "@/components/Page/PageNav"
+import { useBoards, usePagesetActions } from "@/stores/boards"
+import { useDebounceTime, useMessageWindowLocation } from "@/stores/prefs"
+import { generateNewPage } from "@/utils/boards"
+import { DebounceContext, handleDebounce } from "@/utils/debounce"
+import { handleError } from "@/utils/error"
 import {
   loadManifest,
   loadPage,
   saveBoardPage,
   saveManifest,
-} from "@/app/utils/file"
-import { removePath } from "@/app/utils/io"
-import { useTheme } from "@/app/utils/theme"
-import { BoardButton, BoardPage, TileImage } from "@/app/utils/types"
+} from "@/utils/file"
+import { removePath } from "@/utils/io"
+import { useTheme } from "@/utils/theme"
+import { BoardButton, BoardPage, TileImage } from "@/utils/types"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
-import { Stack, useLocalSearchParams, useRouter } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 
 export type EditTile = {
   button: BoardButton | undefined
@@ -45,7 +44,7 @@ export default function PageRoute() {
   const [rootPageState, setRootPageState] = useState<string | undefined>(
     board?.rootPage,
   )
-  const { push, replace, back } = useRouter()
+  const { push, dismissTo, back } = useRouter()
   const { updateBoard } = usePagesetActions()
   const path = pages.find((p) => p.id === pageId)?.path
 
@@ -87,7 +86,7 @@ export default function PageRoute() {
   }
 
   const navigateHome = () => {
-    if (rootPageState) replace(`/${boardId}/${rootPageState}`)
+    if (rootPageState) dismissTo(`/${boardId}/${rootPageState}`)
   }
 
   const deletePage = async () => {
@@ -160,28 +159,25 @@ export default function PageRoute() {
 
   return (
     <DebounceContext value={debounce}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-        {messageWindowLocation === "top" && messageWindow}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {page && (
-            <Page
-              page={page}
-              savePage={savePage}
-              homePageId={rootPageState}
-              navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
-            />
-          )}
-          {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
-        </View>
-        {messageWindowLocation === "bottom" && messageWindow}
-      </SafeAreaView>
+      {messageWindowLocation === "top" && messageWindow}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {page && (
+          <Page
+            page={page}
+            savePage={savePage}
+            homePageId={rootPageState}
+            navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
+          />
+        )}
+        {!page && <ActivityIndicator size="large" color={theme.onSurface} />}
+      </View>
+      {messageWindowLocation === "bottom" && messageWindow}
       <PageNav
         ref={pageNavSheet}
         navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}

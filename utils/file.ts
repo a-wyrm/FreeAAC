@@ -43,6 +43,8 @@ type ObfManifest = {
   }
 }
 
+const cachedPages: Record<string, BoardPage> = {}
+
 const fileAdapter = {
   readBinaryFromInput: async (
     input: string | Buffer | ArrayBuffer | Uint8Array,
@@ -148,13 +150,15 @@ const processImportedBoard = async (tree: AACTree): Promise<ProcessedBoard> => {
   return { id, name, pages, rootPage }
 }
 
-export const importBoardFile = async (): Promise<ProcessedBoard> => {
+export const importBoardFile = async (): Promise<
+  ProcessedBoard | undefined
+> => {
   const result = await DocumentPicker.getDocumentAsync({
     copyToCacheDirectory: true,
   })
 
   const asset = result.assets?.at(0)
-  if (!asset) throw "No file selected"
+  if (!asset) return undefined
 
   const file = getFileFromDocument(asset)
   const data = await file.bytes()
@@ -239,8 +243,11 @@ export const loadPage = async (
   pageId: string,
   path: string,
 ): Promise<BoardPage> => {
+  const cacheName = `${boardId}/${pageId}`
+  if (cacheName in cachedPages) return cachedPages[cacheName]
   const processor = new ObfProcessor({ fileAdapter })
   const tree = await processor.loadIntoTree(`${boardId}/${path}`)
+  cachedPages[cacheName] = tree.pages[pageId]
   return tree.pages[pageId] as BoardPage
 }
 
@@ -265,6 +272,8 @@ export const saveBoardPage = async (
   page: BoardPage,
   path: string,
 ) => {
+  const cacheName = `${boardId}/${pageId}`
+  delete cachedPages[cacheName]
   const tree = {
     metadata: {},
     pages: {

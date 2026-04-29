@@ -26,7 +26,12 @@ export default function DialogConfirm({
 }) {
   const theme = useTheme()
   return (
-    <Modal visible={visible} onRequestClose={onCancel} transparent>
+    <Modal
+      visible={visible}
+      onRequestClose={onCancel}
+      transparent
+      animationType="fade"
+    >
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
         <View
           style={{ ...styles.modal, backgroundColor: theme.surfaceContainer }}
@@ -41,7 +46,7 @@ export default function DialogConfirm({
             {message}
           </Text>
           <View style={{ display: "flex", flexDirection: "row", gap: GAP.lg }}>
-            <Button variant="outline" onPress={onCancel} style={{ flex: 1 }}>
+            <Button variant="ghost" onPress={onCancel} style={{ flex: 1 }}>
               <Text>{cancelLabel}</Text>
             </Button>
             <Button
