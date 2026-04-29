@@ -52,39 +52,17 @@ export default function Index() {
         }}
       >
         <View style={{ ...styles.boardList, backgroundColor: theme.surface }}>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-            }}
+          <Text
+            style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semi }}
           >
-            <Text
-              style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semi }}
-            >
-              My boards
-            </Text>
-            <View style={{ display: "flex", flexDirection: "row" }}>
-              <Link href="/create" asChild>
-                <Button variant="ghost">
-                  <FilePlusCorner size={ICON_SIZE.md} color={theme.onSurface} />
-                </Button>
-              </Link>
-              <Button variant="ghost" onPress={openFile}>
-                <SquareArrowRightEnter
-                  size={ICON_SIZE.md}
-                  color={theme.onSurface}
-                />
-              </Button>
-            </View>
-          </View>
+            My boards
+          </Text>
           <BoardList />
           {loading && (
             <ActivityIndicator size="large" color={theme.onSurface} />
           )}
           {!loading && (
-            <>
+            <View style={{ display: "flex", gap: GAP.md }}>
               <Button
                 variant="outline"
                 onPress={() => router.push("/templates")}
@@ -92,7 +70,20 @@ export default function Index() {
                 <PackageOpen size={ICON_SIZE.md} color={theme.onSurface} />
                 <Text style={{ color: theme.onSurface }}>View templates</Text>
               </Button>
-            </>
+              <Link href="/create" asChild>
+                <Button variant="outline">
+                  <FilePlusCorner size={ICON_SIZE.md} color={theme.onSurface} />
+                  <Text>Create board</Text>
+                </Button>
+              </Link>
+              <Button variant="outline" onPress={openFile}>
+                <SquareArrowRightEnter
+                  size={ICON_SIZE.md}
+                  color={theme.onSurface}
+                />
+                <Text>Import board</Text>
+              </Button>
+            </View>
           )}
         </View>
       </View>
@@ -109,6 +100,7 @@ const styles = StyleSheet.create({
   boardList: {
     width: MAX_WIDTH,
     maxWidth: "100%",
+    marginTop: GAP.lg,
     padding: PADDING.xl,
     gap: GAP.xl,
   },
