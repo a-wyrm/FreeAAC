@@ -56,7 +56,7 @@ export default function DialogRename({
             onChangeText={setText}
           />
           <View style={{ display: "flex", flexDirection: "row", gap: GAP.lg }}>
-            <Button variant="outline" onPress={cancel} style={{ flex: 1 }}>
+            <Button variant="ghost" onPress={cancel} style={{ flex: 1 }}>
               <Text>{cancelLabel}</Text>
             </Button>
             <Button

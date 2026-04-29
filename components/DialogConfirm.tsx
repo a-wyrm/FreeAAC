@@ -41,7 +41,7 @@ export default function DialogConfirm({
             {message}
           </Text>
           <View style={{ display: "flex", flexDirection: "row", gap: GAP.lg }}>
-            <Button variant="outline" onPress={onCancel} style={{ flex: 1 }}>
+            <Button variant="ghost" onPress={onCancel} style={{ flex: 1 }}>
               <Text>{cancelLabel}</Text>
             </Button>
             <Button
