@@ -8,9 +8,9 @@ import { useTransition } from "react"
 import { ActivityIndicator, StyleSheet, View } from "react-native"
 import { usePagesetActions } from "../../stores/boards"
 import {
-    BoardTemplate,
-    licenseImageMap,
-    licenseLinkMap,
+  BoardTemplate,
+  licenseImageMap,
+  licenseLinkMap,
 } from "../../utils/consts"
 import { FONT_SIZE, GAP, MAX_WIDTH, RADIUS, useTheme } from "../../utils/theme"
 import { Button, Text } from "../Styled"
@@ -95,12 +95,9 @@ export default function BoardCard({ board }: { board: BoardTemplate }) {
 
 const styles = StyleSheet.create({
   card: {
-    display: "flex",
-    justifyContent: "flex-end",
     width: MAX_WIDTH / 2 - GAP.xl * 2,
     maxWidth: "90%",
     borderRadius: RADIUS.xl,
     overflow: "hidden",
-    marginHorizontal: "auto",
   },
 })
