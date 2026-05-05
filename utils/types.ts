@@ -15,10 +15,6 @@ export interface ExecuTorchTtsModel {
   downloadProgress: number
 }
 
-// type DataOnly<T> = {
-//   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-//   [K in keyof T as T[K] extends Function | undefined ? never : K]: T[K]
-// }
 type DataOnly<T> = Pick<
   T,
   {
