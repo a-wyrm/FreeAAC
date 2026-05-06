@@ -60,7 +60,7 @@ export const generateNewBoard = (
     metadata: {
       defaultHomePageId: page.id,
     },
-    rootId: null,
+    rootId: page.id,
     toolbarId: null,
     dashboardId: page.id,
   }
