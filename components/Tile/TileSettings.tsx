@@ -1,7 +1,7 @@
 import { useBoards } from "@/stores/boards"
 import {
-    AACSemanticCategory,
-    AACSemanticIntent,
+  AACSemanticCategory,
+  AACSemanticIntent,
 } from "@willwade/aac-processors/browser"
 import { useLocalSearchParams } from "expo-router"
 import { ScrollView, StyleSheet, TextInput, View } from "react-native"
@@ -28,8 +28,8 @@ export default function TileSettings({
   const { boardId } = useLocalSearchParams()
   const boards = useBoards()
   const pages = boards.find((b) => b.id === boardId)?.pages ?? []
-  const pageNames = pages.map((p): PageOption => {
-    return { value: p.id, label: p.name }
+  const pagePaths = pages.map((p): PageOption => {
+    return { value: p.path, label: p.name }
   })
 
   const setVocalization = (message: string) => {
@@ -64,6 +64,7 @@ export default function TileSettings({
             targetPageId: item.value,
           },
         },
+        targetPageId: item.value,
       })
     }
   }
@@ -106,7 +107,7 @@ export default function TileSettings({
           Navigate
         </Text>
         <SheetPicker
-          items={[{ value: undefined, label: "(none)" }, ...pageNames]}
+          items={[{ value: undefined, label: "(none)" }, ...pagePaths]}
           value={button.semanticAction?.targetId}
           onChange={setNavigation}
         />
