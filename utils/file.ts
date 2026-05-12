@@ -1,5 +1,6 @@
 import { HistoryEntry } from "@willwade/aac-processors/analytics"
 import {
+  AACPage,
   AACTree,
   getProcessor,
   ObfProcessor,
@@ -265,7 +266,13 @@ export const loadBoard = async (
 export const saveBoard = async (id: string, tree: BoardTree) => {
   console.log(`Saving board ${id}`)
   const processor = new ObfProcessor({ fileAdapter })
-  await processor.saveFromTree(tree as unknown as AACTree, id, true)
+  const newTree = new AACTree()
+  const newPages: Record<string, AACPage> = {}
+  Object.keys(tree.pages).forEach((k) => {
+    newPages[k] = new AACPage(tree.pages[k])
+  })
+  Object.assign(newTree, tree, { pages: newPages })
+  await processor.saveFromTree(newTree, id, true)
 }
 
 export const saveBoardPage = async (
