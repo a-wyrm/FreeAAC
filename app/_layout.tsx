@@ -31,7 +31,7 @@ export default function RootLayout() {
   const boards = useBoards()
 
   useFocusEffect(() => {
-    const boardExists = boards.find((board) => board.id === defaultBoardId)
+    const boardExists = boards.some((board) => board.id === defaultBoardId)
     if (firstLaunch && defaultBoardId && boardExists) {
       console.log("redirecting to ", defaultBoardId)
       router.push({
