@@ -17,6 +17,7 @@ import {
 } from "lucide-react-native"
 import { useEffect, useRef, useState } from "react"
 import { Platform, ScrollView, View } from "react-native"
+import Toast from "react-native-toast-message"
 import { useSpeak } from "../stores/audio"
 import {
   useEditMode,
@@ -120,15 +121,22 @@ export default function MessageWindow({
     })
 
   const navigateMenu = (isLongPress = false) => {
+    console.log({ exitTapCount })
     if (preventExit === "hold" && !isLongPress) {
-      alert(
-        `Hold the menu button for ${preventExitHoldDuration / 1000} seconds to exit`,
-      )
-      return
+      return Toast.show({
+        type: "info",
+        text1: `Hold the button for ${preventExitHoldDuration / 1000} seconds to exit`,
+      })
     } else if (
       preventExit === "tap" &&
       exitTapCount < preventExitTapCount - 1
     ) {
+      if (exitTapCount === 0) {
+        Toast.show({
+          type: "info",
+          text1: `Tap the button ${preventExitTapCount} times to exit`,
+        })
+      }
       setExitTapCount((count) => count + 1)
       return
     } else if (
