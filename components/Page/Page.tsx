@@ -67,11 +67,15 @@ export default function Page({
   const cols = page.grid.at(0)?.length
   const colWidth =
     pageSize && cols ?
-      (pageSize.width - tileSpacing * 2 - tileSpacing * (cols - 1)) / cols
+      Math.floor(
+        (pageSize.width - tileSpacing * 2 - tileSpacing * (cols - 1)) / cols,
+      )
     : 0
   const rowHeight =
     pageSize ?
-      (pageSize.height - tileSpacing * 2 - tileSpacing * (rows - 1)) / rows
+      Math.floor(
+        (pageSize.height - tileSpacing * 2 - tileSpacing * (rows - 1)) / rows,
+      )
     : 0
 
   const grid = page.grid.flat()
