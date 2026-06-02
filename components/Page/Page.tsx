@@ -12,8 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
   LayoutChangeEvent,
   LayoutRectangle,
-  StyleSheet,
-  View,
+  View
 } from "react-native"
 import { EditTile } from "../../app/[boardId]"
 import { useSpeak } from "../../stores/audio"
@@ -24,7 +23,7 @@ import {
   useTileSpacing,
 } from "../../stores/prefs"
 import { generateNewButton } from "../../utils/boards"
-import { GAP, useTheme } from "../../utils/theme"
+import { useTheme } from "../../utils/theme"
 import { BoardButton, BoardPage } from "../../utils/types"
 import Tile from "../Tile/Tile"
 import TileAdd from "../Tile/TileAdd"
@@ -218,15 +217,15 @@ export default function Page({
   return (
     <>
       <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: theme.surface,
-            borderWidth: editMode ? 6 : 0,
-            borderColor: theme.outline,
-            padding: editMode ? tileSpacing - 6 : tileSpacing,
-          },
-        ]}
+        style={{
+          flex: 1,
+          borderStyle: "dashed",
+          backgroundColor: theme.surface,
+          borderWidth: editMode ? 6 : 0,
+          borderColor: theme.outline,
+          padding: editMode ? tileSpacing - 6 : tileSpacing,
+          gap: tileSpacing,
+        }}
         onLayout={handleLayout}
       >
         {editMode && (
@@ -280,11 +279,3 @@ export default function Page({
     </>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    gap: GAP.lg,
-    borderStyle: "dashed",
-  },
-})
