@@ -16,6 +16,7 @@ import {
 import { fetch } from "expo/fetch"
 import { nanoid } from "nanoid/non-secure"
 import { PageItem } from "../stores/boards"
+import { preloadTreeImages } from "./cache"
 import { appName } from "./consts"
 import {
   getFileFromDocument,
@@ -260,6 +261,7 @@ export const loadBoard = async (
 ): Promise<BoardTree> => {
   const processor = getProcessor(`.${ext}`, { fileAdapter })
   const tree = await processor.loadIntoTree(input)
+  preloadTreeImages(tree)
   return tree as unknown as BoardTree
 }
 
