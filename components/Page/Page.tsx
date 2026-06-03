@@ -1,3 +1,4 @@
+import { preloadImage } from "@/utils/cache"
 import { tileSpacingWidthThreshold } from "@/utils/consts"
 import { handleError } from "@/utils/error"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
@@ -225,6 +226,7 @@ export default function Page({
         image: tile.image.url,
         parameters: { ...tile.button.parameters, image_id: tile.image.id },
       }
+      preloadImage(tile.image.url)
     }
     const newGrid = [...page.grid]
     newGrid[row][col] = tile.button ?? null
