@@ -18,6 +18,7 @@ import {
   useGoHomeOnPress,
   usePlayOnPress,
   useTileSpacing,
+  useVocaliseLinkButtons,
 } from "../../stores/prefs"
 import { generateNewButton } from "../../utils/boards"
 import { useTheme } from "../../utils/theme"
@@ -78,6 +79,7 @@ export default function Page({
   const playOnPress = usePlayOnPress()
   const goHomeOnPress = useGoHomeOnPress()
   const tileSpacing = useTileSpacing()
+  const vocaliseLinkButtons = useVocaliseLinkButtons()
   const spacing = calculateSpacing(tileSpacing, pageSize)
   const speak = useSpeak()
   const { addMessageButton, setSymbolSearchText, logEvent } =
@@ -161,8 +163,10 @@ export default function Page({
           console.error("Could not find page ID", targetPage)
           return handleError("Could not find page ID")
         }
+        if (vocaliseLinkButtons)
+          speak(button.semanticAction.text ?? button.message)
         navigateToPage(targetPage.id)
-        logButtonPress(button, false)
+        logButtonPress(button, vocaliseLinkButtons)
       }
     },
     [
@@ -177,6 +181,7 @@ export default function Page({
       navigateToPage,
       logButtonPress,
       board?.pages,
+      vocaliseLinkButtons,
     ],
   )
 
