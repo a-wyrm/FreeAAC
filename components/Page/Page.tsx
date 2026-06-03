@@ -47,12 +47,8 @@ const calculateTileSize = (
   spacing: number,
 ) => {
   if (!pageSize || !cols || !rows) return { width: 0, height: 0 }
-  const colWidth = Math.floor(
-    (pageSize.width - spacing * 2 - spacing * (cols + 1)) / cols,
-  )
-  const rowHeight = Math.floor(
-    (pageSize.height - spacing * 2 - spacing * (rows + 1)) / rows,
-  )
+  const colWidth = Math.floor((pageSize.width - spacing * (cols + 1)) / cols)
+  const rowHeight = Math.floor((pageSize.height - spacing * (rows + 1)) / rows)
   return { colWidth, rowHeight }
 }
 
@@ -247,9 +243,9 @@ export default function Page({
           flex: 1,
           borderStyle: "dashed",
           backgroundColor: theme.surface,
-          borderWidth: editMode ? 6 : 0,
+          borderWidth: editMode ? spacing : 0,
           borderColor: theme.outline,
-          padding: editMode ? spacing - 6 : spacing,
+          padding: editMode ? 0 : spacing,
           gap: spacing,
         }}
         onLayout={handleLayout}
