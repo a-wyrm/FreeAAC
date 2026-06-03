@@ -48,10 +48,10 @@ const calculateTileSize = (
 ) => {
   if (!pageSize || !cols || !rows) return { width: 0, height: 0 }
   const colWidth = Math.floor(
-    (pageSize.width - spacing * 2 - spacing * (cols - 1)) / cols,
+    (pageSize.width - spacing * 2 - spacing * (cols + 1)) / cols,
   )
   const rowHeight = Math.floor(
-    (pageSize.height - spacing * 2 - spacing * (rows - 1)) / rows,
+    (pageSize.height - spacing * 2 - spacing * (rows + 1)) / rows,
   )
   return { colWidth, rowHeight }
 }
