@@ -48,7 +48,8 @@ import {
   useShowBackspace,
   useShowShareButton,
   useSpeechOptions,
-  useTileSpacing
+  useTileSpacing,
+  useVocaliseLinkButtons,
 } from "../stores/prefs"
 import {
   appName,
@@ -121,6 +122,7 @@ export default function Settings() {
   const buttonView = useButtonView()
   const speechOptions = useSpeechOptions()
   const clearMessageOnPlay = useClearMessageOnPlay()
+  const vocaliseLinkButtons = useVocaliseLinkButtons()
   const goHomeOnPress = useGoHomeOnPress()
   const showShareButton = useShowShareButton()
   const showBackspace = useShowBackspace()
@@ -147,6 +149,7 @@ export default function Settings() {
     setDebounceTime,
     setBackButton,
     importPrefs,
+    toggleVocaliseLinkButtons,
   } = usePrefsActions()
   const { toggleShouldLog, deleteLogs } = usePagesetActions()
   const [voices, setVoices] = useState<
@@ -323,6 +326,13 @@ export default function Settings() {
             setValue={(value) => setBackButton(value as BackButton)}
           />
           <SettingsHeader title="Interaction" icon={Hand} />
+          <SettingsItem
+            title="Vocalise link buttons"
+            description="Speak when a link button is pressed"
+            type="toggle"
+            value={vocaliseLinkButtons}
+            setValue={toggleVocaliseLinkButtons}
+          />
           <SettingsItem
             title="Clear message on play"
             description="Clear the message once it has been played"

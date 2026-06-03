@@ -39,6 +39,7 @@ interface PrefsState {
   backButton: BackButton
   preventExit: PreventExitOption
   defaultBoardId: string | undefined
+  vocaliseLinkButtons: boolean
   actions: {
     togglePlayOnPress: () => void
     setMessageWindowLocation: (location: "top" | "bottom") => void
@@ -55,6 +56,7 @@ interface PrefsState {
     setDefaultBoardId: (value: string | undefined) => void
     importPrefs: (prefs: unknown) => void
     setPreventExit: (value: PreventExitOption) => void
+    toggleVocaliseLinkButtons: () => void
   }
 }
 
@@ -80,6 +82,7 @@ export const usePrefsStore = create<PrefsState>()(
       backButton: defaultBackButton,
       preventExit: undefined,
       defaultBoardId: undefined,
+      vocaliseLinkButtons: false,
       actions: {
         togglePlayOnPress: () => set({ playOnPress: !get().playOnPress }),
         setMessageWindowLocation: (location: "top" | "bottom") =>
@@ -104,6 +107,8 @@ export const usePrefsStore = create<PrefsState>()(
           set(prefs as Partial<Omit<PrefsState, "actions">>),
         setPreventExit: (preventExit?: PreventExitOption) =>
           set({ preventExit }),
+        toggleVocaliseLinkButtons: () =>
+          set({ vocaliseLinkButtons: !get().vocaliseLinkButtons }),
       },
     }),
     {
@@ -134,4 +139,6 @@ export const useDebounceTime = () => usePrefsStore((s) => s.debounceTime)
 export const useBackButton = () => usePrefsStore((s) => s.backButton)
 export const useDefaultBoardId = () => usePrefsStore((s) => s.defaultBoardId)
 export const usePreventExit = () => usePrefsStore((s) => s.preventExit)
+export const useVocaliseLinkButtons = () =>
+  usePrefsStore((s) => s.vocaliseLinkButtons)
 export const usePrefsActions = () => usePrefsStore((s) => s.actions)
