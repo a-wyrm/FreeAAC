@@ -19,7 +19,7 @@ import { BoardButton, BoardPage, TileImage } from "@/utils/types"
 import { TrueSheet } from "@lodev09/react-native-true-sheet"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ActivityIndicator } from "react-native"
+import { ActivityIndicator, Platform } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 export type EditTile = {
@@ -41,6 +41,7 @@ export default function PageRoute() {
   const pageNavSheet = useRef<TrueSheet>(null)
   const pageAddSheet = useRef<TrueSheet>(null)
   const [page, setPage] = useState<BoardPage>()
+  const [isReady, setIsReady] = useState(Platform.OS !== "web")
   const pages = board?.pages ?? []
   const [rootPageState, setRootPageState] = useState<string | undefined>(
     board?.rootPage,
@@ -48,6 +49,32 @@ export default function PageRoute() {
   const { push, dismissTo, back } = useRouter()
   const { updateBoard } = usePagesetActions()
   const path = pages.find((p) => p.id === pageId)?.path
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return
+
+    const STORAGE_KEY = "mmkv.default\\pagesets"
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (!raw) {
+      push("/")
+      return
+    }
+
+    try {
+      const parsed = JSON.parse(raw)
+      const state = parsed?.state ?? parsed
+      const storedBoards = state?.boards ?? []
+      if (storedBoards.length === 0) {
+        push("/")
+        return
+      }
+    } catch {
+      push("/")
+      return
+    }
+
+    setIsReady(true)
+  }, [push])
 
   // Load page from .obf file
   useEffect(() => {
@@ -161,8 +188,15 @@ export default function PageRoute() {
   return (
     <DebounceContext value={debounce}>
       <SafeAreaView style={{ height: "100%" }}>
+        {!isReady && (
+          <ActivityIndicator
+            style={{ marginVertical: "auto" }}
+            size="large"
+            color={theme.onSurface}
+          />
+        )}
         {messageWindowLocation === "top" && messageWindow}
-        {page && (
+        {isReady && page && (
           <Page
             page={page}
             savePage={savePage}
@@ -170,7 +204,7 @@ export default function PageRoute() {
             navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
           />
         )}
-        {!page && (
+        {isReady && !page && (
           <ActivityIndicator
             style={{ marginVertical: "auto" }}
             size="large"

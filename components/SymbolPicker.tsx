@@ -92,13 +92,11 @@ export default function SymbolPicker({
   const insets = useSafeAreaInsets()
   const bottomInset = isIPad ? 0 : insets.bottom
   const symbols =
-    data && symbol
-      ? [symbol, ...data.filter((image) => image.url !== symbol.url)]
-      : data
-        ? data
-        : symbol
-          ? [symbol]
-          : []
+    data && symbol ?
+      [symbol, ...data.filter((image) => image.url !== symbol.url)]
+    : data ? data
+    : symbol ? [symbol]
+    : []
   return (
     <ScrollView
       nestedScrollEnabled
@@ -113,9 +111,9 @@ export default function SymbolPicker({
               key={index}
               onPress={() => onSelect(s)}
               style={
-                symbol && s.url === symbol.url
-                  ? { ...styles.selectedSymbol, outlineColor: theme.onSurface }
-                  : undefined
+                symbol && s.url === symbol.url ?
+                  { ...styles.selectedSymbol, outlineColor: theme.onSurface }
+                : undefined
               }
             >
               <Image

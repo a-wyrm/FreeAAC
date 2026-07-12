@@ -197,6 +197,7 @@ export default function Settings() {
 
   const handleImportPrefs = async () => {
     const prefs = await importPrefsFile()
+    if (!prefs) return
     importPrefs(prefs)
   }
 

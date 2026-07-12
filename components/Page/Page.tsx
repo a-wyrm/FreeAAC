@@ -11,7 +11,12 @@ import {
 import { AACSemanticIntent } from "@willwade/aac-processors/browser"
 import { useLocalSearchParams } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { LayoutChangeEvent, LayoutRectangle, View } from "react-native"
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  View,
+} from "react-native"
 import { EditTile } from "../../app/[boardId]"
 import { useSpeak } from "../../stores/audio"
 import { useBoards, useEditMode, usePagesetActions } from "../../stores/boards"
@@ -64,6 +69,7 @@ export default function Page({
   navigateToPage: (pageId: string) => void
 }) {
   const theme = useTheme()
+  const isWeb = Platform.OS === "web"
   const editSheet = useRef<TrueSheet>(null)
   const { boardId, pageId } = useLocalSearchParams()
   const boards = useBoards()
@@ -84,6 +90,8 @@ export default function Page({
 
   const rows = page.grid.length
   const cols = page.grid.at(0)?.length
+  const rowCount = rows ?? 0
+  const columnCount = cols ?? 0
   const { colWidth, rowHeight } = calculateTileSize(
     pageSize,
     rows,
@@ -194,6 +202,27 @@ export default function Page({
     [editMode, onButtonPress, addButton],
   )
 
+  const renderEditableGrid = () =>
+    Array.from({ length: rowCount }).map((_, row) => (
+      <View
+        key={row}
+        style={{
+          flexDirection: "row",
+          gap: spacing,
+        }}
+      >
+        {Array.from({ length: columnCount }).map((_, col) => {
+          const index = row * columnCount + col
+          const item = grid[index]
+          return (
+            <View key={index} style={{ width: colWidth, height: rowHeight }}>
+              {renderButton({ item, index })}
+            </View>
+          )
+        })}
+      </View>
+    ))
+
   const handleOrderChange = (order: UniqueIdentifier[]) => {
     const flatGrid = order.map((id) => grid[parseInt(id as string)])
     const newGrid = []
@@ -250,7 +279,7 @@ export default function Page({
         }}
         onLayout={handleLayout}
       >
-        {editMode && (
+        {editMode && !isWeb && (
           <DndProvider>
             <DraggableGrid
               key={grid.map((item) => item?.id ?? "null").join(",")}
@@ -274,6 +303,7 @@ export default function Page({
             </DraggableGrid>
           </DndProvider>
         )}
+        {editMode && isWeb && renderEditableGrid()}
         {!editMode &&
           Array.from({ length: rows }).map((_, row) => (
             <View
