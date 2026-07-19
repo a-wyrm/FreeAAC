@@ -90,6 +90,14 @@ export default function PageRoute() {
     if (rootPageState) dismissTo(`/${boardId}/${rootPageState}`)
   }
 
+  const savePageTitle = (name: string | undefined) => {
+    if (!page || !name) return
+    savePage({ ...page, name })
+    updateBoard(id, {
+      pages: pages.map((p) => (p.id === page.id ? { ...p, name } : p)),
+    })
+  }
+
   const deletePage = async () => {
     const path = pages.find((p) => p.id === currentPageId)?.path
     if (!path) return handleError("Could not delete page - no path found")
@@ -122,7 +130,7 @@ export default function PageRoute() {
       navigateBack={back}
       isHome={rootPageState === page?.id}
       pageTitle={page?.name}
-      setPageTitle={(name) => page && name && savePage({ ...page, name })}
+      setPageTitle={savePageTitle}
       openPageNav={() => pageNavSheet.current?.present()}
       deletePage={deletePage}
       rootPage={rootPageState}
