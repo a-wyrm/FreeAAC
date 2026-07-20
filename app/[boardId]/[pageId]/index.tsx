@@ -148,7 +148,7 @@ export default function PageRoute() {
   const addPage = async (name: string, rows: number, cols: number) => {
     if (!currentPageId)
       return handleError("Could not add page - current page not found")
-    const page = generateNewPage(rows, cols, currentPageId, name)
+    const page = generateNewPage(rows, cols, currentPageId, pages.length, name)
     const path = `${page.id}.obf`
     updateBoard(id, {
       ...board,
@@ -191,7 +191,11 @@ export default function PageRoute() {
         ref={pageNavSheet}
         navigateToPage={(pageId) => push(`/${boardId}/${pageId}`)}
       />
-      <PageAddSheet ref={pageAddSheet} onAdd={addPage} />
+      <PageAddSheet
+        ref={pageAddSheet}
+        onAdd={addPage}
+        numPages={pages.length}
+      />
     </DebounceContext>
   )
 }
